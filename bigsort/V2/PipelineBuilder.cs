@@ -11,7 +11,7 @@ namespace BigSort.V2
     /// <summary>
     /// Builder method.
     /// </summary>
-    public static (ITargetBlock<StringBuffer>, ITargetBlock<BucketFlushEvent[]>) Build(MergeSortOptions options)
+    public static (ITargetBlock<StringBuffer>, ITargetBlock<BucketMergeEvent[]>) Build(MergeSortOptions options)
     {
       // Buffer data in buckets
       var bucketBufferBlock = BucketBufferBlock.Create();
@@ -32,7 +32,15 @@ namespace BigSort.V2
       var bucketMergeBlock = BucketMergeBlock.Create();
       bucketMergeBatchBlock.LinkTo(bucketMergeBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
-      return (bucketBufferBlock, bucketMergeBlock);
+      // The final batch
+      var finalMergeBatchBlock = FinalMergeBatchBlock.Create();
+      bucketMergeBlock.LinkTo(finalMergeBatchBlock, new DataflowLinkOptions { PropagateCompletion = true });
+
+      // The final merge
+      var finalMergeBlock = FinalMergeBlock.Create();
+      finalMergeBatchBlock.LinkTo(finalMergeBlock, new DataflowLinkOptions { PropagateCompletion = true });
+
+      return (bucketBufferBlock, finalMergeBlock);
     }
   }
 }

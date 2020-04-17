@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks.Dataflow;
 
 namespace BigSort.V2
@@ -18,22 +19,25 @@ namespace BigSort.V2
     /// <summary>
     /// The factory.
     /// </summary>
-    public static ITargetBlock<BucketFlushEvent[]> Create()
+    public static IPropagatorBlock<BucketFlushEvent[], BucketMergeEvent> Create()
     {
       var block = new BucketMergeBlock();
-      var result = new ActionBlock<BucketFlushEvent[]>(
+      var result = new TransformBlock<BucketFlushEvent[], BucketMergeEvent>(
         (evt) => block.Execute(evt));
 
       return result;
     }
 
-    private void Execute(BucketFlushEvent[] events)
+    private BucketMergeEvent Execute(BucketFlushEvent[] events)
     {
       Console.WriteLine($"BucketMergeBlock.Execute(). Files: ");
       for(int i = 0; i < events.Length; i++)
       {
         Console.WriteLine($"File {i}: {events[i].FilePath}");
       }
+
+      var result = new BucketMergeEvent("some-path", events.First().Infix);
+      return result;
     }
   }
 }
