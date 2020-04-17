@@ -11,6 +11,11 @@
     public string InFilePath { get; set; }
 
     /// <summary>
+    /// The output file path.
+    /// </summary>
+    public string OutFilePath { get; set; }
+
+    /// <summary>
     /// The path for temp directory.
     /// </summary>
     public string TempDirectoryPath { get; set; }

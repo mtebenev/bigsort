@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks.Dataflow;
+using BigSort.Common;
 
 namespace BigSort.V2
 {
@@ -11,7 +13,7 @@ namespace BigSort.V2
     /// <summary>
     /// The factory.
     /// </summary>
-    public static ITargetBlock<BucketMergeEvent[]> Create()
+    public static ITargetBlock<BucketMergeEvent[]> Create(MergeSortOptions options)
     {
       var result = new ActionBlock<BucketMergeEvent[]>(events =>
       {
@@ -20,6 +22,12 @@ namespace BigSort.V2
         {
           Console.WriteLine($"File {i}: {events[i].FilePath}");
         }
+
+        var filePaths = events
+          .Select(e => e.FilePath)
+          .ToList();
+
+        FinalMerger.Merge(filePaths, options.OutFilePath);
       });
 
       return result;

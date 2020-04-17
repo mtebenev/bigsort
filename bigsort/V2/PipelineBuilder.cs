@@ -29,7 +29,7 @@ namespace BigSort.V2
       bucketFlushBlock.LinkTo(bucketMergeBatchBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // Merge buckets
-      var bucketMergeBlock = BucketMergeBlock.Create();
+      var bucketMergeBlock = BucketMergeBlock.Create(options);
       bucketMergeBatchBlock.LinkTo(bucketMergeBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // The final batch
@@ -37,7 +37,7 @@ namespace BigSort.V2
       bucketMergeBlock.LinkTo(finalMergeBatchBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // The final merge
-      var finalMergeBlock = FinalMergeBlock.Create();
+      var finalMergeBlock = FinalMergeBlock.Create(options);
       finalMergeBatchBlock.LinkTo(finalMergeBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       return (bucketBufferBlock, finalMergeBlock);

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
+using BigSort.Common;
 
 namespace BigSort.V2
 {
@@ -9,19 +11,22 @@ namespace BigSort.V2
   /// </summary>
   internal class BucketMergeBlock
   {
+    private readonly string _tempDirectoryPath;
+
     /// <summary>
     /// Ctor.
     /// </summary>
-    private BucketMergeBlock()
+    private BucketMergeBlock(string tempDirectoryPath)
     {
+      this._tempDirectoryPath = tempDirectoryPath;
     }
 
     /// <summary>
     /// The factory.
     /// </summary>
-    public static IPropagatorBlock<BucketFlushEvent[], BucketMergeEvent> Create()
+    public static IPropagatorBlock<BucketFlushEvent[], BucketMergeEvent> Create(MergeSortOptions options)
     {
-      var block = new BucketMergeBlock();
+      var block = new BucketMergeBlock(options.TempDirectoryPath);
       var result = new TransformBlock<BucketFlushEvent[], BucketMergeEvent>(
         (evt) => block.Execute(evt));
 
@@ -36,7 +41,14 @@ namespace BigSort.V2
         Console.WriteLine($"File {i}: {events[i].FilePath}");
       }
 
-      var result = new BucketMergeEvent("some-path", events.First().Infix);
+      var chunkFilePath = Path.Combine(this._tempDirectoryPath, $@"{new Random().Next()}.txt");
+      var filePaths = events
+        .Select(e => e.FilePath)
+        .ToList();
+
+      BucketMerger.MergeAsyncKWay(filePaths, chunkFilePath);
+
+      var result = new BucketMergeEvent(chunkFilePath, events.First().Infix);
       return result;
     }
   }

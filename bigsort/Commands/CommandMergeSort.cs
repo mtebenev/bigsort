@@ -24,6 +24,7 @@ namespace BigSort.Commands
       var options = new MergeSortOptions
       {
         InFilePath = @"c:\_sorting\file.txt",
+        OutFilePath = @"c:\_sorting\out.txt",
         TempDirectoryPath = @"C:\_sorting\chunks"
       };
 
