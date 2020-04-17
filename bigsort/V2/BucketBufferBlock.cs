@@ -20,7 +20,7 @@ namespace BigSort.V2
     }
 
     /// <summary>
-    /// Factory.
+    /// The factory.
     /// </summary>
     public static TransformManyBlock<StringBuffer, SortBucket> Create()
     {
