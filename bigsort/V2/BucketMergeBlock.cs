@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
+using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
 namespace BigSort.V2
 {
@@ -39,16 +40,20 @@ namespace BigSort.V2
 
     private BucketMergeEvent Execute(BucketFlushEvent[] events)
     {
+      BucketMergeEvent result;
       Console.WriteLine($"BucketMergeBlock.Execute(). Files: {events.Length}");
 
-      var chunkFilePath = Path.Combine(this._tempDirectoryPath, $@"{new Random().Next()}.txt");
-      var filePaths = events
-        .Select(e => e.FilePath)
-        .ToList();
+      using(Markers.EnterSpan("Bucket merge"))
+      {
+        var chunkFilePath = Path.Combine(this._tempDirectoryPath, $@"{new Random().Next()}.txt");
+        var filePaths = events
+          .Select(e => e.FilePath)
+          .ToList();
 
-      BucketMerger.MergeAsyncKWay(filePaths, chunkFilePath);
+        BucketMerger.MergeAsyncKWay(filePaths, chunkFilePath);
 
-      var result = new BucketMergeEvent(chunkFilePath, events.First().Infix);
+        result = new BucketMergeEvent(chunkFilePath, events.First().Infix);
+      }
       return result;
     }
   }

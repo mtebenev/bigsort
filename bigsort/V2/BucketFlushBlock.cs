@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
+using Microsoft.ConcurrencyVisualizer.Instrumentation;
 using StackExchange.Profiling;
 
 namespace BigSort.V2
@@ -37,21 +38,20 @@ namespace BigSort.V2
     {
       var chunkFilePath = Path.Combine(this._tempDirectoryPath, $@"{new Random().Next()}.txt");
 
+      using(Markers.EnterSpan("Bucket flush"))
       using(MiniProfiler.Current.CustomTiming("Save chunk file", ""))
+      using(var stream = new FileStream(chunkFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
       {
-        using(var stream = new FileStream(chunkFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+        using(StreamWriter sw = new StreamWriter(stream))
         {
-          using(StreamWriter sw = new StreamWriter(stream))
+          for(int i = 0; i < bucket.Records.Count; i++)
           {
-            for(int i = 0; i < bucket.Records.Count; i++)
-            {
-              sw.WriteLine(bucket.Records[i].Value);
-            }
-            stream.Flush();
+            sw.WriteLine(bucket.Records[i].Value);
           }
+          stream.Flush();
         }
       }
-
+      
       Console.WriteLine("Saved chunk file.");
       
       var result = new BucketFlushEvent(chunkFilePath, bucket.Infix);

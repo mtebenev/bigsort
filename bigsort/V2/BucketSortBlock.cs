@@ -1,5 +1,6 @@
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
+using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
 namespace BigSort.V2
 {
@@ -33,8 +34,11 @@ namespace BigSort.V2
 
     private SortBucket Execute(SortBucket bucket)
     {
-      var comparer = new SortRecordComparer();
-      bucket.Records.Sort(comparer);
+      using(Markers.EnterSpan("Bucket sort"))
+      {
+        var comparer = new SortRecordComparer();
+        bucket.Records.Sort(comparer);
+      }
       return bucket;
     }
   }

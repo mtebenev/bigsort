@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="C5" Version="3.0.0-beta" />
+    <PackageReference Include="ConcurrencyVisualizer" Version="3.0.0" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
     <PackageReference Include="MiniProfiler.AspNetCore" Version="4.1.0" />
     <PackageReference Include="morelinq" Version="3.3.2" />

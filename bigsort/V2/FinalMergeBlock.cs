@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
+using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
 namespace BigSort.V2
 {
@@ -27,7 +28,10 @@ namespace BigSort.V2
           .Select(e => e.FilePath)
           .ToList();
 
-        FinalMerger.Merge(filePaths, options.OutFilePath);
+        using(Markers.EnterSpan("Final merge"))
+        {
+          FinalMerger.Merge(filePaths, options.OutFilePath); 
+        }          
       });
 
       return result;
