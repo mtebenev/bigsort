@@ -24,5 +24,12 @@ namespace bigsort
 
       return result;
     }
+
+    protected int OnExecute(CommandLineApplication app)
+    {
+      // this shows help even if the --help option isn't specified
+      app.ShowHelp();
+      return 1;
+    }
   }
 }

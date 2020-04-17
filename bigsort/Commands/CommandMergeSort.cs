@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
+using BigSort.Common;
+using BigSort.V1;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace BigSort.Commands
@@ -9,9 +12,23 @@ namespace BigSort.Commands
   [Command(Name = "merge-sort")]
   internal class CommandMergeSort
   {
-    public Task OnExecuteAsync()
+    public async Task OnExecuteAsync()
     {
-      return Task.CompletedTask;
+      var tempPath = @"c:\_sorting\chunks";
+      if(Directory.Exists(tempPath))
+      {
+        Directory.Delete(tempPath, true);
+      }
+      Directory.CreateDirectory(tempPath);
+
+      var options = new MergeSortOptions
+      {
+        InFilePath = @"c:\_sorting\file.txt",
+        TempDirectoryPath = @"C:\_sorting\chunks"
+      };
+
+      var mergeSortTask = new MergeSortTaskV1();
+      await mergeSortTask.ExecuteAsync(options);
     }
   }
 }

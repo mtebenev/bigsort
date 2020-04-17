@@ -5,5 +5,14 @@
   /// </summary>
   internal class MergeSortOptions
   {
+    /// <summary>
+    /// The input file path.
+    /// </summary>
+    public string InFilePath { get; set; }
+
+    /// <summary>
+    /// The path for temp directory.
+    /// </summary>
+    public string TempDirectoryPath { get; set; }
   }
 }

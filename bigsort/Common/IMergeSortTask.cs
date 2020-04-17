@@ -7,6 +7,9 @@ namespace BigSort.Common
   /// </summary>
   internal interface IMergeSortTask
   {
-    Task ExecuteAsync();
+    /// <summary>
+    /// Runs the merge sort.
+    /// </summary>
+    Task ExecuteAsync(MergeSortOptions options);
   }
 }
