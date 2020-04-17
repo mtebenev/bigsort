@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using BigSort.Common;
-using BigSort.V1;
+using BigSort.V2;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace BigSort.Commands
@@ -27,7 +27,7 @@ namespace BigSort.Commands
         TempDirectoryPath = @"C:\_sorting\chunks"
       };
 
-      var mergeSortTask = new MergeSortTaskV1();
+      var mergeSortTask = new MergeSortTaskV2();
       await mergeSortTask.ExecuteAsync(options);
     }
   }
