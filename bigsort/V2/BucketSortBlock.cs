@@ -1,4 +1,5 @@
 using System.Threading.Tasks.Dataflow;
+using BigSort.Common;
 
 namespace BigSort.V2
 {
@@ -17,17 +18,23 @@ namespace BigSort.V2
     /// <summary>
     /// Factory.
     /// </summary>
-    public static TransformBlock<SortBucket, SortBucket> Create()
+    public static TransformBlock<SortBucket, SortBucket> Create(MergeSortOptions options)
     {
       var block = new BucketSortBlock();
       var result = new TransformBlock<SortBucket, SortBucket>(
-        (bucket) => block.Execute(bucket));
+        (bucket) => block.Execute(bucket),
+        new ExecutionDataflowBlockOptions
+        {
+          MaxDegreeOfParallelism = options.MaxConcurrentJobs
+        });
 
       return result;
     }
 
     private SortBucket Execute(SortBucket bucket)
     {
+      var comparer = new SortRecordComparer();
+      bucket.Records.Sort(comparer);
       return bucket;
     }
   }

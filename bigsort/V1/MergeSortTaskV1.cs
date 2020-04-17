@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BigSort.Common;
+using Microsoft.Extensions.Options;
 using StackExchange.Profiling;
 
 namespace BigSort.V1
@@ -44,7 +45,7 @@ namespace BigSort.V1
             try
             {
               // Parallel sort count
-              if(this._sortTasks.Count < 7)
+              if(this._sortTasks.Count < options.MaxConcurrentJobs)
               {
                 var splitBuffer = this._preSortQueue.Take();
                 this.RunSortTask(splitBuffer);

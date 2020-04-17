@@ -17,7 +17,7 @@ namespace BigSort.V2
       var bucketBufferBlock = BucketBufferBlock.Create();
 
       // Sort buckets
-      var bucketSortBlock = BucketSortBlock.Create();
+      var bucketSortBlock = BucketSortBlock.Create(options);
       bucketBufferBlock.LinkTo(bucketSortBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // Flush buckets

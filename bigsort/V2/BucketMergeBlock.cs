@@ -28,18 +28,18 @@ namespace BigSort.V2
     {
       var block = new BucketMergeBlock(options.TempDirectoryPath);
       var result = new TransformBlock<BucketFlushEvent[], BucketMergeEvent>(
-        (evt) => block.Execute(evt));
+        (evt) => block.Execute(evt),
+        new ExecutionDataflowBlockOptions
+        {
+          MaxDegreeOfParallelism = options.MaxConcurrentJobs
+        });
 
       return result;
     }
 
     private BucketMergeEvent Execute(BucketFlushEvent[] events)
     {
-      Console.WriteLine($"BucketMergeBlock.Execute(). Files: ");
-      for(int i = 0; i < events.Length; i++)
-      {
-        Console.WriteLine($"File {i}: {events[i].FilePath}");
-      }
+      Console.WriteLine($"BucketMergeBlock.Execute(). Files: {events.Length}");
 
       var chunkFilePath = Path.Combine(this._tempDirectoryPath, $@"{new Random().Next()}.txt");
       var filePaths = events

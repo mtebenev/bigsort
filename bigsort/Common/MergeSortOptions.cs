@@ -19,5 +19,10 @@
     /// The path for temp directory.
     /// </summary>
     public string TempDirectoryPath { get; set; }
+
+    /// <summary>
+    /// Max parallel jobs for CPU-intensive tasks.
+    /// </summary>
+    public int MaxConcurrentJobs { get; set; }
   }
 }
