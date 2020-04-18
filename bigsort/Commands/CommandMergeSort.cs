@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using BigSort.Common;
 using BigSort.V1;
 using BigSort.V2;
+using BigSort.V3;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace BigSort.Commands
@@ -11,7 +12,8 @@ namespace BigSort.Commands
   internal enum MergeType
   {
     V1,
-    V2
+    V2,
+    V3
   }
 
   /// <summary>
@@ -44,17 +46,26 @@ namespace BigSort.Commands
       };
 
       IMergeSortTask mergeSortTask;
-      if(this.MergeTypeParam.HasValue && this.MergeTypeParam.MergeType == MergeType.V1)
-      {
-        Console.WriteLine("Doin V1");
-        mergeSortTask = new MergeSortTaskV1();
-      }
-      else
-      {
-        Console.WriteLine("Doin V2");
-        mergeSortTask = new MergeSortTaskV2();
-      }
+      var mergeTypeVersion = this.MergeTypeParam.HasValue
+        ? this.MergeTypeParam.MergeType
+        : MergeType.V3;
 
+      switch(mergeTypeVersion)
+      {
+        case MergeType.V1:
+          mergeSortTask = new MergeSortTaskV1();
+          break;
+        case MergeType.V2:
+          mergeSortTask = new MergeSortTaskV2();
+          break;
+        case MergeType.V3:
+          mergeSortTask = new MergeSortTaskV3();
+          break;
+        default:
+          mergeSortTask = new MergeSortTaskV3();
+          break;
+      }
+      Console.WriteLine($"Launching merge sort: {mergeTypeVersion}");
       await mergeSortTask.ExecuteAsync(options);
     }
   }

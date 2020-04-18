@@ -8,7 +8,7 @@ using StackExchange.Profiling;
 namespace BigSort.V2
 {
   /// <summary>
-  /// Responsible for flushing buckets
+  /// Responsible for flushing buckets.
   /// </summary>
   internal class BucketFlushBlock
   {

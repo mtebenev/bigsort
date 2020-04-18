@@ -1,4 +1,4 @@
-namespace BigSort.V2
+namespace BigSort.Common
 {
   /// <summary>
   /// Keeps strings for processing. Really used number of strings is BufferSize.

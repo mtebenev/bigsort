@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks.Dataflow;
 
-namespace BigSort.V2
+namespace BigSort.Common
 {
   /// <summary>
   /// The source data reader for V2.
@@ -11,12 +11,13 @@ namespace BigSort.V2
   {
     public void Start(string inFilePath, ITargetBlock<StringBuffer> target)
     {
-      using(StreamReader sr = File.OpenText(inFilePath))
+      using(var sr = File.OpenText(inFilePath))
       {
         var splitBufferSize = 1000000; // 19mb?
+        //var splitBufferSize = 6000000; // 113mb
         var memBuffer = new string[splitBufferSize];
 
-        string s = String.Empty;
+        var s = string.Empty;
         var splitBufferPos = 0;
         while((s = sr.ReadLine()) != null)
         {
@@ -37,7 +38,7 @@ namespace BigSort.V2
         // Sort the final buffer
         if(splitBufferPos > 0)
         {
-          var splitBuffer = new StringBuffer(memBuffer, splitBufferSize);
+          var splitBuffer = new StringBuffer(memBuffer, splitBufferPos);
           target.Post(splitBuffer);
         }
 
