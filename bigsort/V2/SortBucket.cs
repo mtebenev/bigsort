@@ -7,10 +7,11 @@ namespace BigSort.V2
   /// </summary>
   internal class SortBucket
   {
-    public SortBucket(long infix, List<SortRecord> records)
+    public SortBucket(long infix, List<SortRecord> records, bool isFinalChunk)
     {
       this.Infix = infix;
       this.Records = records;
+      this.IsFinalChunk = isFinalChunk;
     }
 
     /// <summary>
@@ -25,5 +26,6 @@ namespace BigSort.V2
     /// The bucket records.
     /// </summary>
     public List<SortRecord> Records { get; }
+    public bool IsFinalChunk { get; }
   }
 }

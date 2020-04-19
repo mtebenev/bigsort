@@ -8,16 +8,16 @@ using StackExchange.Profiling;
 namespace BigSort.V2
 {
   /// <summary>
-  /// Responsible for flushing buckets.
+  /// Responsible for flushing bucket chunks.
   /// </summary>
-  internal class BucketFlushBlock
+  internal class BucketChunkFlushBlock
   {
     private readonly string _tempDirectoryPath;
 
     /// <summary>
     /// Ctor.
     /// </summary>
-    private BucketFlushBlock(string tempDirectoryPath)
+    private BucketChunkFlushBlock(string tempDirectoryPath)
     {
       this._tempDirectoryPath = tempDirectoryPath;
     }
@@ -25,17 +25,26 @@ namespace BigSort.V2
     /// <summary>
     /// The factory.
     /// </summary>
-    public static TransformBlock<SortBucket, BucketFlushEvent> Create(MergeSortOptions options)
+    public static TransformBlock<SortBucket, BucketChunkFlushEvent> Create(MergeSortOptions options, IPipelineContext pipelineContext)
     {
-      var block = new BucketFlushBlock(options.TempDirectoryPath);
-      var result = new TransformBlock<SortBucket, BucketFlushEvent>(
-        (bucket) => block.Execute(bucket));
+      var block = new BucketChunkFlushBlock(options.TempDirectoryPath);
+      var result = new TransformBlock<SortBucket, BucketChunkFlushEvent>(
+        (bucket) => block.Execute(bucket, pipelineContext),
+        new ExecutionDataflowBlockOptions { EnsureOrdered = true });
 
       return result;
     }
 
-    private BucketFlushEvent Execute(SortBucket bucket)
+    private BucketChunkFlushEvent Execute(SortBucket bucket, IPipelineContext pipelineContext)
     {
+      Console.WriteLine($"Chunk flush: {bucket.Infix}, final={bucket.IsFinalChunk}");
+
+      // TODOA: diagnostics
+      if(pipelineContext.IsBucketFlushed(bucket.Infix))
+      {
+        throw new NotImplementedException();
+      }
+
       var chunkFilePath = Path.Combine(this._tempDirectoryPath, $@"{new Random().Next()}.txt");
 
       using(Markers.EnterSpan("Bucket flush"))
@@ -52,9 +61,14 @@ namespace BigSort.V2
         }
       }
       
-      Console.WriteLine("Saved chunk file.");
+      //Console.WriteLine("Saved chunk file.");
       
-      var result = new BucketFlushEvent(chunkFilePath, bucket.Infix);
+      if(bucket.IsFinalChunk)
+      {
+        pipelineContext.SetBucketFlushed(bucket.Infix);
+      }
+
+      var result = new BucketChunkFlushEvent(chunkFilePath, bucket.Infix, bucket.IsFinalChunk);
       return result;
     }
   }

@@ -6,13 +6,15 @@ namespace BigSort.Common
   /// </summary>
   public class StringBuffer
   {
-    public StringBuffer(string[] buffer, int bufferSize)
+    public StringBuffer(string[] buffer, int bufferSize, bool isReadingCompleted)
     {
       this.Buffer = buffer;
       this.BufferSize = bufferSize;
+      this.IsReadingCompleted = isReadingCompleted;
     }
 
     public string[] Buffer { get; }
     public int BufferSize { get; }
+    public bool IsReadingCompleted { get; }
   }
 }

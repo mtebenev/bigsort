@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
 namespace BigSort.Common
 {
@@ -13,8 +14,8 @@ namespace BigSort.Common
     {
       using(var sr = File.OpenText(inFilePath))
       {
-        var splitBufferSize = 1000000; // 19mb?
-        //var splitBufferSize = 6000000; // 113mb
+        //var splitBufferSize = 1000000; // 19mb?
+        var splitBufferSize = 6000000; // 113mb
         var memBuffer = new string[splitBufferSize];
 
         var s = string.Empty;
@@ -25,7 +26,7 @@ namespace BigSort.Common
           // This may block the thread if we have too many concurrent sorting tasks.
           if(splitBufferPos == splitBufferSize)
           {
-            var splitBuffer = new StringBuffer(memBuffer, splitBufferSize);
+            var splitBuffer = new StringBuffer(memBuffer, splitBufferSize, sr.EndOfStream);
             target.Post(splitBuffer);
 
             memBuffer = new string[splitBufferSize];
@@ -38,11 +39,15 @@ namespace BigSort.Common
         // Sort the final buffer
         if(splitBufferPos > 0)
         {
-          var splitBuffer = new StringBuffer(memBuffer, splitBufferPos);
+          var splitBuffer = new StringBuffer(memBuffer, splitBufferPos, true);
           target.Post(splitBuffer);
         }
 
         target.Complete();
+
+        // Visualizer
+        Markers.WriteFlag("Reading completed.");
+        Console.WriteLine("Reading completed.");
       }
     }
   }

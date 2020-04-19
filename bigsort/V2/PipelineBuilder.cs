@@ -11,21 +11,21 @@ namespace BigSort.V2
     /// <summary>
     /// Builder method.
     /// </summary>
-    public static (ITargetBlock<StringBuffer>, ITargetBlock<BucketMergeEvent[]>) Build(MergeSortOptions options)
+    public static (ITargetBlock<StringBuffer>, ITargetBlock<BucketMergeEvent[]>) Build(MergeSortOptions options, IPipelineContext pipelineContext)
     {
       // Buffer data in buckets
-      var bucketBufferBlock = BucketBufferBlock.Create();
+      var bucketBufferBlock = BucketBufferBlock.Create(pipelineContext);
 
       // Sort buckets
       var bucketSortBlock = BucketSortBlock.Create(options);
       bucketBufferBlock.LinkTo(bucketSortBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // Flush buckets
-      var bucketFlushBlock = BucketFlushBlock.Create(options);
+      var bucketFlushBlock = BucketChunkFlushBlock.Create(options, pipelineContext);
       bucketSortBlock.LinkTo(bucketFlushBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // Produce batches for bucket merge
-      var bucketMergeBatchBlock = BucketMergeBatchBlock.Create();
+      var bucketMergeBatchBlock = BucketMergeCoordinatorBlock.Create();
       bucketFlushBlock.LinkTo(bucketMergeBatchBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // Merge buckets

@@ -12,8 +12,7 @@ namespace BigSort.Commands
   internal enum MergeType
   {
     V1,
-    V2,
-    V3
+    V2
   }
 
   /// <summary>
@@ -48,7 +47,7 @@ namespace BigSort.Commands
       IMergeSortTask mergeSortTask;
       var mergeTypeVersion = this.MergeTypeParam.HasValue
         ? this.MergeTypeParam.MergeType
-        : MergeType.V3;
+        : MergeType.V2;
 
       switch(mergeTypeVersion)
       {
@@ -58,11 +57,8 @@ namespace BigSort.Commands
         case MergeType.V2:
           mergeSortTask = new MergeSortTaskV2();
           break;
-        case MergeType.V3:
-          mergeSortTask = new MergeSortTaskV3();
-          break;
         default:
-          mergeSortTask = new MergeSortTaskV3();
+          mergeSortTask = new MergeSortTaskV2();
           break;
       }
       Console.WriteLine($"Launching merge sort: {mergeTypeVersion}");

@@ -13,8 +13,9 @@ namespace BigSort.V2
     /// </summary>
     public async Task ExecuteAsync(MergeSortOptions options)
     {
+      var context = new PipelineContext();
       var reader = new SourceReader();
-      var (startBlock, finishBlock) = PipelineBuilder.Build(options);
+      var (startBlock, finishBlock) = PipelineBuilder.Build(options, context);
 
       reader.Start(options.InFilePath, startBlock);
 

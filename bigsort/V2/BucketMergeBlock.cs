@@ -25,10 +25,10 @@ namespace BigSort.V2
     /// <summary>
     /// The factory.
     /// </summary>
-    public static IPropagatorBlock<BucketFlushEvent[], BucketMergeEvent> Create(MergeSortOptions options)
+    public static IPropagatorBlock<BucketChunkFlushEvent[], BucketMergeEvent> Create(MergeSortOptions options)
     {
       var block = new BucketMergeBlock(options.TempDirectoryPath);
-      var result = new TransformBlock<BucketFlushEvent[], BucketMergeEvent>(
+      var result = new TransformBlock<BucketChunkFlushEvent[], BucketMergeEvent>(
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
         {
@@ -38,7 +38,7 @@ namespace BigSort.V2
       return result;
     }
 
-    private BucketMergeEvent Execute(BucketFlushEvent[] events)
+    private BucketMergeEvent Execute(BucketChunkFlushEvent[] events)
     {
       BucketMergeEvent result;
       Console.WriteLine($"BucketMergeBlock.Execute(). Files: {events.Length}");
@@ -50,7 +50,7 @@ namespace BigSort.V2
           .Select(e => e.FilePath)
           .ToList();
 
-        BucketMerger.MergeAsyncKWay(filePaths, chunkFilePath);
+        BucketMerger.MergeKWay(filePaths, chunkFilePath);
 
         result = new BucketMergeEvent(chunkFilePath, events.First().Infix);
       }

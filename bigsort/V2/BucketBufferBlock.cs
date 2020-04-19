@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 
@@ -11,23 +13,40 @@ namespace BigSort.V2
   internal class BucketBufferBlock
   {
     private readonly Dictionary<long, List<SortRecord>> _buckets;
+    private readonly IPipelineContext _pipelineContext;
 
     /// <summary>
     /// Ctor.
     /// </summary>
-    private BucketBufferBlock()
+    private BucketBufferBlock(IPipelineContext pipelineContext)
     {
       this._buckets = new Dictionary<long, List<SortRecord>>();
+      this._pipelineContext = pipelineContext;
     }
 
     /// <summary>
     /// The factory.
+    /// TODOA: comment options
     /// </summary>
-    public static TransformManyBlock<StringBuffer, SortBucket> Create()
+    public static TransformManyBlock<StringBuffer, SortBucket> Create(IPipelineContext pipelineContext)
     {
-      var block = new BucketBufferBlock();
+      var block = new BucketBufferBlock(pipelineContext);
       var result = new TransformManyBlock<StringBuffer, SortBucket>(
-        (stringBuffer) => block.Execute(stringBuffer));
+        (stringBuffer) => block.Execute(stringBuffer),
+        new ExecutionDataflowBlockOptions
+        {
+          MaxDegreeOfParallelism = 1,
+          BoundedCapacity = 1,
+          EnsureOrdered = true
+        });
+      result.Completion.ContinueWith(t =>
+        {
+          Console.WriteLine($"Completing buffer. Input count: {result.InputCount}, output count: {result.OutputCount}");
+        },
+        default,
+        TaskContinuationOptions.ExecuteSynchronously,
+        TaskScheduler.Default
+      );
 
       return result;
     }
@@ -38,7 +57,8 @@ namespace BigSort.V2
     public IEnumerable<SortBucket> Execute(StringBuffer stringBuffer)
     {
       this.PushNewRecords(stringBuffer);
-      var flushedRecords = this.FlushBuckets();
+      var flushedRecords = this.FlushBuckets(stringBuffer.IsReadingCompleted);
+      Console.WriteLine($"Buffer: strings -> records. Reading completed: {this._pipelineContext.IsReadingCompleted}");
 
       return flushedRecords;
     }
@@ -68,13 +88,17 @@ namespace BigSort.V2
 
     /// <summary>
     /// Flushes full buckets if any.
+    /// TODOA: confusing name
     /// </summary>
-    private IEnumerable<SortBucket> FlushBuckets()
+    private IEnumerable<SortBucket> FlushBuckets(bool isReadingCompleted)
     {
       var maxBucketRecords = 10000;
-      var flushedBuckets = this._buckets
-        .Where(kvp => kvp.Value.Count > maxBucketRecords)
-        .Select(kvp => new SortBucket(kvp.Key, kvp.Value))
+      var stringSource = isReadingCompleted
+        ? this._buckets
+        : this._buckets.Where(kvp => kvp.Value.Count > maxBucketRecords);
+
+      var flushedBuckets = stringSource
+        .Select(kvp => new SortBucket(kvp.Key, kvp.Value, isReadingCompleted))
         .ToList();
 
       foreach(var fb in flushedBuckets)

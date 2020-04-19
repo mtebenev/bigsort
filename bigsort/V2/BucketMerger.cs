@@ -12,17 +12,33 @@ namespace BigSort.V2
   /// </summary>
   internal static class BucketMerger
   {
-    public static void MergeAsyncKWay(IList<string> filePaths, string outFilePath)
+    /// <summary>
+    /// k-way file merge.
+    /// </summary>
+    public static void MergeKWay(IList<string> filePaths, string outFilePath)
     {
-      var sources = filePaths.Select(p => File.ReadLines(p)).ToList();
+      try
+      {
 
-      var e1 = sources[0];
-      var erest = sources.Skip(1).ToArray();
-      var target = e1.SortedMerge(OrderByDirection.Ascending, erest);
-      File.WriteAllLines(outFilePath, target);
+        var sources = filePaths
+           .Select(p => File
+           .ReadLines(p))
+           .ToList();
+
+        var e1 = sources[0];
+        var erest = sources.Skip(1).ToArray();
+        var target = e1.SortedMerge(OrderByDirection.Ascending, erest);
+        File.WriteAllLines(outFilePath, target);
+      }
+      catch(Exception)
+      {
+      }
     }
 
-    public static Task<string> MergeAsync(IList<string> filePaths)
+    /// <summary>
+    /// Pairwise merging. Takes sources files by pairs and merges to the output file.
+    /// </summary>
+    public static Task<string> MergePairwiseAsync(IList<string> filePaths)
     {
       var levelPaths = filePaths.ToList();
       while(levelPaths.Count > 1)
