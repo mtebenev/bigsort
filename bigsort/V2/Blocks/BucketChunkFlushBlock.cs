@@ -2,10 +2,11 @@ using System;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
+using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
 using StackExchange.Profiling;
 
-namespace BigSort.V2
+namespace BigSort.V2.Blocks
 {
   /// <summary>
   /// Responsible for flushing bucket chunks.
@@ -51,18 +52,18 @@ namespace BigSort.V2
       using(MiniProfiler.Current.CustomTiming("Save chunk file", ""))
       using(var stream = new FileStream(chunkFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
       {
-        using(StreamWriter sw = new StreamWriter(stream))
+        using(var sw = new StreamWriter(stream))
         {
-          for(int i = 0; i < bucket.Records.Count; i++)
+          for(var i = 0; i < bucket.Records.Count; i++)
           {
             sw.WriteLine(bucket.Records[i].Value);
           }
           stream.Flush();
         }
       }
-      
+
       //Console.WriteLine("Saved chunk file.");
-      
+
       if(bucket.IsFinalChunk)
       {
         pipelineContext.SetBucketFlushed(bucket.Infix);

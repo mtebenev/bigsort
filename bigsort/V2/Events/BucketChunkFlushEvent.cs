@@ -1,4 +1,4 @@
-﻿namespace BigSort.V2
+﻿namespace BigSort.V2.Events
 {
   /// <summary>
   /// Sent when a single chunk file has been saved for a bucket.

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
+using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
 namespace BigSort.Common
@@ -10,12 +11,12 @@ namespace BigSort.Common
   /// </summary>
   internal class SourceReader
   {
-    public void Start(string inFilePath, ITargetBlock<StringBuffer> target)
+    public void Start(string inFilePath, ITargetBlock<BufferReadEvent> target)
     {
       using(var sr = File.OpenText(inFilePath))
       {
-        //var splitBufferSize = 1000000; // 19mb?
-        var splitBufferSize = 6000000; // 113mb
+        var splitBufferSize = 1000000; // 19mb?
+        //var splitBufferSize = 6000000; // 113mb
         var memBuffer = new string[splitBufferSize];
 
         var s = string.Empty;
@@ -26,8 +27,9 @@ namespace BigSort.Common
           // This may block the thread if we have too many concurrent sorting tasks.
           if(splitBufferPos == splitBufferSize)
           {
-            var splitBuffer = new StringBuffer(memBuffer, splitBufferSize, sr.EndOfStream);
-            target.Post(splitBuffer);
+            var splitBuffer = new StringBuffer(memBuffer, splitBufferSize);
+            var evt = new BufferReadEvent(splitBuffer, sr.EndOfStream);
+            target.Post(evt);
 
             memBuffer = new string[splitBufferSize];
             splitBufferPos = 0;
@@ -39,8 +41,9 @@ namespace BigSort.Common
         // Sort the final buffer
         if(splitBufferPos > 0)
         {
-          var splitBuffer = new StringBuffer(memBuffer, splitBufferPos, true);
-          target.Post(splitBuffer);
+          var splitBuffer = new StringBuffer(memBuffer, splitBufferPos);
+          var evt = new BufferReadEvent(splitBuffer, true);
+          target.Post(evt);
         }
 
         target.Complete();

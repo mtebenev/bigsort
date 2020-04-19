@@ -1,5 +1,7 @@
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
+using BigSort.V2.Blocks;
+using BigSort.V2.Events;
 
 namespace BigSort.V2
 {
@@ -11,7 +13,7 @@ namespace BigSort.V2
     /// <summary>
     /// Builder method.
     /// </summary>
-    public static (ITargetBlock<StringBuffer>, ITargetBlock<BucketMergeEvent[]>) Build(MergeSortOptions options, IPipelineContext pipelineContext)
+    public static (ITargetBlock<BufferReadEvent>, ITargetBlock<BucketMergeEvent[]>) Build(MergeSortOptions options, IPipelineContext pipelineContext)
     {
       // Buffer data in buckets
       var bucketBufferBlock = BucketBufferBlock.Create(pipelineContext);

@@ -3,9 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
+using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
-namespace BigSort.V2
+namespace BigSort.V2.Blocks
 {
   /// <summary>
   /// Responsible for merging individual buckets.

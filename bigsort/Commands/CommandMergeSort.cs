@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using BigSort.Common;
 using BigSort.V1;
 using BigSort.V2;
-using BigSort.V3;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace BigSort.Commands

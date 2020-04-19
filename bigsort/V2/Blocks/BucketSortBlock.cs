@@ -2,7 +2,7 @@ using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
-namespace BigSort.V2
+namespace BigSort.V2.Blocks
 {
   /// <summary>
   /// Responsible for sorting bucket content.

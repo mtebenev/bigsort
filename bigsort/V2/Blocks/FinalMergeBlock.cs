@@ -2,9 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
+using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
-namespace BigSort.V2
+namespace BigSort.V2.Blocks
 {
   /// <summary>
   /// Performs the final merge.
@@ -19,7 +20,7 @@ namespace BigSort.V2
       var result = new ActionBlock<BucketMergeEvent[]>(events =>
       {
         Console.WriteLine($"FinalMergeBlock.Execute(). Files: ");
-        for(int i = 0; i < events.Length; i++)
+        for(var i = 0; i < events.Length; i++)
         {
           Console.WriteLine($"File {i}: {events[i].FilePath}");
         }
@@ -30,8 +31,8 @@ namespace BigSort.V2
 
         using(Markers.EnterSpan("Final merge"))
         {
-          FinalMerger.Merge(filePaths, options.OutFilePath); 
-        }          
+          FinalMerger.Merge(filePaths, options.OutFilePath);
+        }
       });
 
       return result;

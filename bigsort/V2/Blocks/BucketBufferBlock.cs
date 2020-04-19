@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
+using BigSort.V2.Events;
 
-namespace BigSort.V2
+namespace BigSort.V2.Blocks
 {
   /// <summary>
   /// The block is responsible for bucket collecting records into the buckets.
@@ -28,11 +29,11 @@ namespace BigSort.V2
     /// The factory.
     /// TODOA: comment options
     /// </summary>
-    public static TransformManyBlock<StringBuffer, SortBucket> Create(IPipelineContext pipelineContext)
+    public static TransformManyBlock<BufferReadEvent, SortBucket> Create(IPipelineContext pipelineContext)
     {
       var block = new BucketBufferBlock(pipelineContext);
-      var result = new TransformManyBlock<StringBuffer, SortBucket>(
-        (stringBuffer) => block.Execute(stringBuffer),
+      var result = new TransformManyBlock<BufferReadEvent, SortBucket>(
+        (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
         {
           MaxDegreeOfParallelism = 1,
@@ -54,10 +55,10 @@ namespace BigSort.V2
     /// <summary>
     /// Executes the bucket sort on the string buffer.
     /// </summary>
-    public IEnumerable<SortBucket> Execute(StringBuffer stringBuffer)
+    public IEnumerable<SortBucket> Execute(BufferReadEvent evt)
     {
-      this.PushNewRecords(stringBuffer);
-      var flushedRecords = this.FlushBuckets(stringBuffer.IsReadingCompleted);
+      this.PushNewRecords(evt.Buffer);
+      var flushedRecords = this.FlushBuckets(evt.IsReadCompleted);
       Console.WriteLine($"Buffer: strings -> records. Reading completed: {this._pipelineContext.IsReadingCompleted}");
 
       return flushedRecords;

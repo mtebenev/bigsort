@@ -1,4 +1,4 @@
-﻿namespace BigSort.V2
+﻿namespace BigSort.V2.Events
 {
   /// <summary>
   /// Sent when a bucket has been fully merged.
