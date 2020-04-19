@@ -11,7 +11,7 @@ namespace BigSort.V2.Blocks
   /// <summary>
   /// The block is responsible for bucket collecting records into the buckets.
   /// </summary>
-  internal class BucketBufferBlock
+  internal class StringBufferBlock
   {
     private readonly Dictionary<long, List<SortRecord>> _buckets;
     private readonly IPipelineContext _pipelineContext;
@@ -19,7 +19,7 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// Ctor.
     /// </summary>
-    private BucketBufferBlock(IPipelineContext pipelineContext)
+    private StringBufferBlock(IPipelineContext pipelineContext)
     {
       this._buckets = new Dictionary<long, List<SortRecord>>();
       this._pipelineContext = pipelineContext;
@@ -31,7 +31,7 @@ namespace BigSort.V2.Blocks
     /// </summary>
     public static TransformManyBlock<BufferReadEvent, SortBucket> Create(IPipelineContext pipelineContext)
     {
-      var block = new BucketBufferBlock(pipelineContext);
+      var block = new StringBufferBlock(pipelineContext);
       var result = new TransformManyBlock<BufferReadEvent, SortBucket>(
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions

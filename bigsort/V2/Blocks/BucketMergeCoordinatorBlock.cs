@@ -14,16 +14,16 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// The factory.
     /// </summary>
-    public static IPropagatorBlock<BucketChunkFlushEvent, BucketChunkFlushEvent[]> Create()
+    public static IPropagatorBlock<ChunkFlushEvent, ChunkFlushEvent[]> Create()
     {
-      var groupedEvents = new Dictionary<long, List<BucketChunkFlushEvent>>();
-      var outgoingBlock = new BufferBlock<BucketChunkFlushEvent[]>(new DataflowBlockOptions { EnsureOrdered = true });
-      var incomingBlock = new ActionBlock<BucketChunkFlushEvent>(async evt =>
+      var groupedEvents = new Dictionary<long, List<ChunkFlushEvent>>();
+      var outgoingBlock = new BufferBlock<ChunkFlushEvent[]>(new DataflowBlockOptions { EnsureOrdered = true });
+      var incomingBlock = new ActionBlock<ChunkFlushEvent>(async evt =>
       {
-        List<BucketChunkFlushEvent> bucketEvents;
+        List<ChunkFlushEvent> bucketEvents;
         if(!groupedEvents.TryGetValue(evt.Infix, out bucketEvents))
         {
-          bucketEvents = new List<BucketChunkFlushEvent>();
+          bucketEvents = new List<ChunkFlushEvent>();
           groupedEvents.Add(evt.Infix, bucketEvents);
         }
 
@@ -55,7 +55,7 @@ namespace BigSort.V2.Blocks
         }
         else if(t.IsFaulted)
         {
-          ((ITargetBlock<BucketChunkFlushEvent[]>)outgoingBlock).Fault(t.Exception.InnerException);
+          ((ITargetBlock<ChunkFlushEvent[]>)outgoingBlock).Fault(t.Exception.InnerException);
         }
         outgoingBlock.Complete();
       }, default, TaskContinuationOptions.ExecuteSynchronously,

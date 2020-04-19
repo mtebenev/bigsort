@@ -5,14 +5,14 @@ using Microsoft.ConcurrencyVisualizer.Instrumentation;
 namespace BigSort.V2.Blocks
 {
   /// <summary>
-  /// Responsible for sorting bucket content.
+  /// Responsible for sorting chunk content.
   /// </summary>
-  internal class BucketSortBlock
+  internal class ChunkSortBlock
   {
     /// <summary>
     /// Ctor.
     /// </summary>
-    private BucketSortBlock()
+    private ChunkSortBlock()
     {
     }
 
@@ -21,7 +21,7 @@ namespace BigSort.V2.Blocks
     /// </summary>
     public static TransformBlock<SortBucket, SortBucket> Create(MergeSortOptions options)
     {
-      var block = new BucketSortBlock();
+      var block = new ChunkSortBlock();
       var result = new TransformBlock<SortBucket, SortBucket>(
         (bucket) => block.Execute(bucket),
         new ExecutionDataflowBlockOptions

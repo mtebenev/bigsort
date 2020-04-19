@@ -3,13 +3,13 @@
   /// <summary>
   /// Sent when a single chunk file has been saved for a bucket.
   /// </summary>
-  internal class BucketChunkFlushEvent
+  internal class ChunkFlushEvent
   {
     /// <summary>
     /// Ctor.
     /// <paramref name="isFinalChunk">Hint for merge coordinator: he can start earlier if the bucked has been completed.</paramref>
     /// </summary>
-    public BucketChunkFlushEvent(string filePath, long infix, bool isFinalChunk)
+    public ChunkFlushEvent(string filePath, long infix, bool isFinalChunk)
     {
       this.FilePath = filePath;
       this.Infix = infix;

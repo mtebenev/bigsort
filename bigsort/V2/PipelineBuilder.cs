@@ -16,14 +16,14 @@ namespace BigSort.V2
     public static (ITargetBlock<BufferReadEvent>, ITargetBlock<BucketMergeEvent[]>) Build(MergeSortOptions options, IPipelineContext pipelineContext)
     {
       // Buffer data in buckets
-      var bucketBufferBlock = BucketBufferBlock.Create(pipelineContext);
+      var bucketBufferBlock = StringBufferBlock.Create(pipelineContext);
 
       // Sort buckets
-      var bucketSortBlock = BucketSortBlock.Create(options);
+      var bucketSortBlock = ChunkSortBlock.Create(options);
       bucketBufferBlock.LinkTo(bucketSortBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // Flush buckets
-      var bucketFlushBlock = BucketChunkFlushBlock.Create(options, pipelineContext);
+      var bucketFlushBlock = ChunkFlushBlock.Create(options, pipelineContext);
       bucketSortBlock.LinkTo(bucketFlushBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // Produce batches for bucket merge

@@ -11,14 +11,14 @@ namespace BigSort.V2.Blocks
   /// <summary>
   /// Responsible for flushing bucket chunks.
   /// </summary>
-  internal class BucketChunkFlushBlock
+  internal class ChunkFlushBlock
   {
     private readonly string _tempDirectoryPath;
 
     /// <summary>
     /// Ctor.
     /// </summary>
-    private BucketChunkFlushBlock(string tempDirectoryPath)
+    private ChunkFlushBlock(string tempDirectoryPath)
     {
       this._tempDirectoryPath = tempDirectoryPath;
     }
@@ -26,17 +26,17 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// The factory.
     /// </summary>
-    public static TransformBlock<SortBucket, BucketChunkFlushEvent> Create(MergeSortOptions options, IPipelineContext pipelineContext)
+    public static TransformBlock<SortBucket, ChunkFlushEvent> Create(MergeSortOptions options, IPipelineContext pipelineContext)
     {
-      var block = new BucketChunkFlushBlock(options.TempDirectoryPath);
-      var result = new TransformBlock<SortBucket, BucketChunkFlushEvent>(
+      var block = new ChunkFlushBlock(options.TempDirectoryPath);
+      var result = new TransformBlock<SortBucket, ChunkFlushEvent>(
         (bucket) => block.Execute(bucket, pipelineContext),
         new ExecutionDataflowBlockOptions { EnsureOrdered = true });
 
       return result;
     }
 
-    private BucketChunkFlushEvent Execute(SortBucket bucket, IPipelineContext pipelineContext)
+    private ChunkFlushEvent Execute(SortBucket bucket, IPipelineContext pipelineContext)
     {
       // TODOA: diagnostics
       if(pipelineContext.IsBucketFlushed(bucket.Infix))
@@ -66,7 +66,7 @@ namespace BigSort.V2.Blocks
       }
       pipelineContext.AddChunkFlushes();
 
-      var result = new BucketChunkFlushEvent(chunkFilePath, bucket.Infix, bucket.IsFinalChunk);
+      var result = new ChunkFlushEvent(chunkFilePath, bucket.Infix, bucket.IsFinalChunk);
       return result;
     }
   }
