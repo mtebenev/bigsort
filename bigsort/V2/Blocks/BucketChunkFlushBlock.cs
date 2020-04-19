@@ -38,8 +38,6 @@ namespace BigSort.V2.Blocks
 
     private BucketChunkFlushEvent Execute(SortBucket bucket, IPipelineContext pipelineContext)
     {
-      Console.WriteLine($"Chunk flush: {bucket.Infix}, final={bucket.IsFinalChunk}");
-
       // TODOA: diagnostics
       if(pipelineContext.IsBucketFlushed(bucket.Infix))
       {
@@ -62,12 +60,11 @@ namespace BigSort.V2.Blocks
         }
       }
 
-      //Console.WriteLine("Saved chunk file.");
-
       if(bucket.IsFinalChunk)
       {
         pipelineContext.SetBucketFlushed(bucket.Infix);
       }
+      pipelineContext.AddChunkFlushes();
 
       var result = new BucketChunkFlushEvent(chunkFilePath, bucket.Infix, bucket.IsFinalChunk);
       return result;

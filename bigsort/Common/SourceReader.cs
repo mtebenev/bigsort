@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
+using BigSort.V2;
 using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
@@ -11,7 +12,7 @@ namespace BigSort.Common
   /// </summary>
   internal class SourceReader
   {
-    public void Start(string inFilePath, ITargetBlock<BufferReadEvent> target)
+    public void Start(string inFilePath, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
     {
       using(var sr = File.OpenText(inFilePath))
       {
@@ -30,6 +31,7 @@ namespace BigSort.Common
             var splitBuffer = new StringBuffer(memBuffer, splitBufferSize);
             var evt = new BufferReadEvent(splitBuffer, sr.EndOfStream);
             target.Post(evt);
+            pipelineContext.AddBlockReads();
 
             memBuffer = new string[splitBufferSize];
             splitBufferPos = 0;

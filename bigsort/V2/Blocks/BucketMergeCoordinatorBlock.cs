@@ -31,7 +31,6 @@ namespace BigSort.V2.Blocks
 
         if(evt.IsFinalChunk)
         {
-          Console.WriteLine($"SENDING FINAL CHUNK: {evt.Infix}");
           var chunks = groupedEvents[evt.Infix];
           await outgoingBlock.SendAsync(chunks.ToArray()).ConfigureAwait(false);
           chunks.Clear();

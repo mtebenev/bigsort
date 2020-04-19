@@ -59,7 +59,6 @@ namespace BigSort.V2.Blocks
     {
       this.PushNewRecords(evt.Buffer);
       var flushedRecords = this.FlushBuckets(evt.IsReadCompleted);
-      Console.WriteLine($"Buffer: strings -> records. Reading completed: {this._pipelineContext.IsReadingCompleted}");
 
       return flushedRecords;
     }

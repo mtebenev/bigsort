@@ -17,9 +17,10 @@ namespace BigSort.V2
       var reader = new SourceReader();
       var (startBlock, finishBlock) = PipelineBuilder.Build(options, context);
 
-      reader.Start(options.InFilePath, startBlock);
+      reader.Start(options.InFilePath, context, startBlock);
 
       await finishBlock.Completion;
+      context.PrintStats();
     }
   }
 }

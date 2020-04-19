@@ -14,21 +14,23 @@ namespace BigSort.V2.Blocks
   internal class BucketMergeBlock
   {
     private readonly string _tempDirectoryPath;
+    private readonly IPipelineContext _pipelineContext;
 
     /// <summary>
     /// Ctor.
     /// </summary>
-    private BucketMergeBlock(string tempDirectoryPath)
+    private BucketMergeBlock(string tempDirectoryPath, IPipelineContext pipelineContext)
     {
       this._tempDirectoryPath = tempDirectoryPath;
+      this._pipelineContext = pipelineContext;
     }
 
     /// <summary>
     /// The factory.
     /// </summary>
-    public static IPropagatorBlock<BucketChunkFlushEvent[], BucketMergeEvent> Create(MergeSortOptions options)
+    public static IPropagatorBlock<BucketChunkFlushEvent[], BucketMergeEvent> Create(MergeSortOptions options, IPipelineContext pipelineContext)
     {
-      var block = new BucketMergeBlock(options.TempDirectoryPath);
+      var block = new BucketMergeBlock(options.TempDirectoryPath, pipelineContext);
       var result = new TransformBlock<BucketChunkFlushEvent[], BucketMergeEvent>(
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
@@ -52,6 +54,7 @@ namespace BigSort.V2.Blocks
           .ToList();
 
         BucketMerger.MergeKWay(filePaths, chunkFilePath);
+        this._pipelineContext.AddBucketMerges();
 
         result = new BucketMergeEvent(chunkFilePath, events.First().Infix);
       }

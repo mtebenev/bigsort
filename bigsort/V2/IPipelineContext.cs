@@ -5,11 +5,17 @@
   /// </summary>
   internal interface IPipelineContext
   {
-    bool IsReadingCompleted { get; }
-
-    void SetReadingCompleted();
     bool IsBucketFlushed(long infix);
     void SetBucketFlushed(long infix);
 
+    // Stat counters
+    void AddBlockReads();
+    void AddChunkFlushes();
+    void AddBucketMerges();
+
+    /// <summary>
+    /// Prints statistics to the console.
+    /// </summary>
+    void PrintStats();
   }
 }
