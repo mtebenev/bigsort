@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,13 +12,11 @@ namespace BigSort.V2
   /// </summary>
   internal class PipelineContext : IPipelineContext
   {
-    private List<long> _completedBuckets;
-    private long _blockReads;
-    private long _chunkFlushes;
-    private long _bucketkMerges;
     private readonly TaskCompletionSource<long[]> _tcsInfixesReady;
     private readonly HashSet<long> _infixes; // All discovered infixes.
     private readonly ILogger _logger;
+    private ConcurrentDictionary<long, int> _chunkFlushesMap;
+    private ConcurrentDictionary<long, int> _chunkStartsMap;
 
     /// <summary>
     /// Ctor.
@@ -25,72 +24,24 @@ namespace BigSort.V2
     public PipelineContext(ILoggerFactory loggerFactory)
     {
       this.LoggerFactory = loggerFactory;
+      this.Stats = new Stats();
       this._logger = loggerFactory.CreateLogger(nameof(PipelineContext));
-      this._completedBuckets = new List<long>();
       this._tcsInfixesReady = new TaskCompletionSource<long[]>();
       this._infixes = new HashSet<long>();
-    }
+      this._chunkFlushesMap = new ConcurrentDictionary<long, int>();
+      this._chunkStartsMap = new ConcurrentDictionary<long, int>();
+  }
+
+  /// <summary>
+  /// IPipelineContext.
+  /// </summary>
+  public ILoggerFactory LoggerFactory { get; }
+
 
     /// <summary>
     /// IPipelineContext.
     /// </summary>
-    public ILoggerFactory LoggerFactory { get; }
-
-    /// <summary>
-    /// IPipelineContext.
-    /// </summary>
-    public void AddBlockReads()
-    {
-      this._blockReads++;
-    }
-
-    /// <summary>
-    /// IPipelineContext.
-    /// </summary>
-    public void AddChunkFlushes()
-    {
-      this._chunkFlushes++;
-    }
-
-    /// <summary>
-    /// IPipelineContext.
-    /// </summary>
-    public void AddBucketMerges()
-    {
-      this._bucketkMerges++;
-    }
-
-    /// <summary>
-    /// IPipelineContext.
-    /// </summary>
-    public bool IsBucketFlushed(long infix)
-    {
-      var result = this._completedBuckets.Any(i => i == infix);
-      return result;
-    }
-
-    /// <summary>
-    /// IPipelineContext.
-    /// </summary>
-    public void PrintStats()
-    {
-      Console.WriteLine("Statistics:");
-      Console.WriteLine($"Block reads: {this._blockReads}");
-      Console.WriteLine($"Chunk flushes: {this._chunkFlushes}");
-      Console.WriteLine($"Bucket merges: {this._bucketkMerges}");
-    }
-
-    /// <summary>
-    /// IPipelineContext.
-    /// </summary>
-    public void SetBucketFlushed(long infix)
-    {
-      if(this._completedBuckets.Any(i => i == infix))
-      {
-        throw new NotImplementedException();
-      }
-      this._completedBuckets.Add(infix);
-    }
+    public Stats Stats { get; }
 
     /// <summary>
     /// IPipelineContext.
@@ -115,6 +66,28 @@ namespace BigSort.V2
     {
       this._logger.LogDebug("Infixes collected.");
       this._tcsInfixesReady.SetResult(this._infixes.ToArray());
+    }
+
+    public void OnChunkFlush(long infix)
+    {
+      this._chunkFlushesMap.AddOrUpdate(infix, 1, (k, v) => v + 1);
+    }
+
+    public void OnChunkStart(long infix)
+    {
+      this._chunkStartsMap.AddOrUpdate(infix, 1, (k, v) => v + 1);
+    }
+
+    public bool IsBucketFullyFlushed(long infix)
+    {
+      if(!this._chunkStartsMap.ContainsKey(infix) || !this._chunkFlushesMap.ContainsKey(infix))
+      {
+        // Probably something wrong in the pipeline. Discovered buckets lost?
+        throw new InvalidOperationException("Number or flushed buckets is different from number of the found buckets.");
+      }
+
+      var result = this._chunkStartsMap.ContainsKey(infix) == this._chunkFlushesMap.ContainsKey(infix);
+      return result;
     }
   }
 }

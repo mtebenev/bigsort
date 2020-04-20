@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks.Dataflow;
 using BigSort.V2;
 using BigSort.V2.Events;
@@ -35,7 +34,7 @@ namespace BigSort.Common
             var splitBuffer = new StringBuffer(memBuffer, splitBufferSize);
             var evt = new BufferReadEvent(splitBuffer, sr.EndOfStream);
             target.Post(evt);
-            pipelineContext.AddBlockReads();
+            pipelineContext.Stats.AddBlockReads();
             logger.LogDebug("Pushed string buffer. size: {size}, final: {isFinal}", splitBufferSize, sr.EndOfStream);
 
             memBuffer = new string[splitBufferSize];
@@ -51,7 +50,7 @@ namespace BigSort.Common
           var splitBuffer = new StringBuffer(memBuffer, splitBufferPos);
           var evt = new BufferReadEvent(splitBuffer, true);
           target.Post(evt);
-          pipelineContext.AddBlockReads();
+          pipelineContext.Stats.AddBlockReads();
           logger.LogDebug("Pushed string buffer. size: {size}, final: {isFinal}", splitBufferPos, true);
         }
 

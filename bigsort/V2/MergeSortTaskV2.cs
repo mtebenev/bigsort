@@ -28,7 +28,7 @@ namespace BigSort.V2
       reader.Start(options.InFilePath, context, startBlock);
 
       await finishBlock.Completion;
-      context.PrintStats();
+      context.Stats.PrintStats();
     }
   }
 }

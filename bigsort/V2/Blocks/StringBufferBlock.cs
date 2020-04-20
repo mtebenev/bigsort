@@ -37,9 +37,7 @@ namespace BigSort.V2.Blocks
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
         {
-          MaxDegreeOfParallelism = 1,
-          BoundedCapacity = 1,
-          EnsureOrdered = true
+          MaxDegreeOfParallelism = 1
         });
 
       return result;
@@ -93,13 +91,13 @@ namespace BigSort.V2.Blocks
         : this._buckets.Where(kvp => kvp.Value.Count > maxBucketRecords);
 
       var flushedBuckets = stringSource
-        .Select(kvp => new SortBucket(kvp.Key, kvp.Value, isReadingCompleted))
+        .Select(kvp => new SortBucket(kvp.Key, kvp.Value))
         .ToList();
 
       foreach(var fb in flushedBuckets)
       {
         this._buckets.Remove(fb.Infix);
-        this._pipelineContext.AddInfix(fb.Infix);
+        this._pipelineContext.OnChunkStart(fb.Infix);
         this._logger.LogDebug("Flushed block, infix: {infix}", InfixUtils.InfixToString(fb.Infix));
       }
 

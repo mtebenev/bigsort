@@ -33,20 +33,14 @@ namespace BigSort.V2.Blocks
     {
       var block = new ChunkFlushBlock(options.TempDirectoryPath, pipelineContext);
       var result = new TransformBlock<SortBucket, ChunkFlushEvent>(
-        (bucket) => block.Execute(bucket, pipelineContext),
-        new ExecutionDataflowBlockOptions { EnsureOrdered = true });
+        (bucket) => block.Execute(bucket, pipelineContext));
 
       return result;
     }
 
     private ChunkFlushEvent Execute(SortBucket bucket, IPipelineContext pipelineContext)
     {
-      this._logger.LogDebug("Flushing chunk, infix: {infix}, final: {isFinal}", InfixUtils.InfixToString(bucket.Infix), bucket.IsFinalChunk);
-      // TODOA: diagnostics
-      if(pipelineContext.IsBucketFlushed(bucket.Infix))
-      {
-        throw new NotImplementedException();
-      }
+      this._logger.LogDebug("Flushing chunk, infix: {infix}", InfixUtils.InfixToString(bucket.Infix));
 
       var chunkFilePath = Path.Combine(this._tempDirectoryPath, $@"{new Random().Next()}.txt");
 
@@ -64,13 +58,10 @@ namespace BigSort.V2.Blocks
         }
       }
 
-      if(bucket.IsFinalChunk)
-      {
-        pipelineContext.SetBucketFlushed(bucket.Infix);
-      }
-      pipelineContext.AddChunkFlushes();
+      pipelineContext.Stats.AddChunkFlushes();
+      pipelineContext.OnChunkFlush(bucket.Infix);
 
-      var result = new ChunkFlushEvent(chunkFilePath, bucket.Infix, bucket.IsFinalChunk);
+      var result = new ChunkFlushEvent(chunkFilePath, bucket.Infix);
       return result;
     }
   }

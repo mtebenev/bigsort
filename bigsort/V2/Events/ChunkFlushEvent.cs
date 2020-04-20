@@ -7,13 +7,11 @@
   {
     /// <summary>
     /// Ctor.
-    /// <paramref name="isFinalChunk">Hint for merge coordinator: he can start earlier if the bucked has been completed.</paramref>
     /// </summary>
-    public ChunkFlushEvent(string filePath, long infix, bool isFinalChunk)
+    public ChunkFlushEvent(string filePath, long infix)
     {
       this.FilePath = filePath;
       this.Infix = infix;
-      this.IsFinalChunk = isFinalChunk;
     }
 
     /// <summary>
@@ -25,6 +23,5 @@
     /// The infix of the chunk.
     /// </summary>
     public long Infix { get; }
-    public bool IsFinalChunk { get; }
   }
 }
