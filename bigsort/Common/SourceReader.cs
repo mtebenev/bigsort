@@ -18,6 +18,7 @@ namespace BigSort.Common
       {
         var splitBufferSize = 1000000; // 19mb?
         //var splitBufferSize = 6000000; // 113mb
+        //var splitBufferSize = 12000000; // 226mb
         var memBuffer = new string[splitBufferSize];
 
         var s = string.Empty;
@@ -46,6 +47,7 @@ namespace BigSort.Common
           var splitBuffer = new StringBuffer(memBuffer, splitBufferPos);
           var evt = new BufferReadEvent(splitBuffer, true);
           target.Post(evt);
+          pipelineContext.AddBlockReads();
         }
 
         target.Complete();

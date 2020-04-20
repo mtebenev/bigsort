@@ -18,8 +18,7 @@ namespace BigSort.Test.V2
     public void Create_Infix()
     {
       var r = new SortRecord("123. abcd");
-      var infixBytes = Encoding.Unicode.GetBytes("abcd");
-      var expectedInfix = BitConverter.ToInt64(infixBytes);
+      var expectedInfix = TestingUtils.StringToInfix("abcd");
 
       Assert.Equal(expectedInfix, r.Infix);
     }

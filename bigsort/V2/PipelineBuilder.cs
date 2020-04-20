@@ -35,7 +35,7 @@ namespace BigSort.V2
       bucketMergeBatchBlock.LinkTo(bucketMergeBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // The final batch
-      var finalMergeBatchBlock = FinalMergeBatchBlock.Create();
+      var finalMergeBatchBlock = FinalMergeBatchBlock.Create(pipelineContext);
       bucketMergeBlock.LinkTo(finalMergeBatchBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // The final merge

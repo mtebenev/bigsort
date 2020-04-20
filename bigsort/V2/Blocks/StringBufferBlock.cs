@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.V2.Events;
@@ -96,6 +94,12 @@ namespace BigSort.V2.Blocks
       foreach(var fb in flushedBuckets)
       {
         this._buckets.Remove(fb.Infix);
+        this._pipelineContext.AddInfix(fb.Infix);
+      }
+
+      if(isReadingCompleted)
+      {
+        this._pipelineContext.OnInfixesReady();
       }
 
       return flushedBuckets;

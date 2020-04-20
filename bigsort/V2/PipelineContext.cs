@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BigSort.V2
 {
@@ -13,6 +14,8 @@ namespace BigSort.V2
     private long _blockReads;
     private long _chunkFlushes;
     private long _bucketkMerges;
+    private readonly TaskCompletionSource<long[]> _tcsInfixesReady;
+    private readonly HashSet<long> _infixes; // All discovered infixes.
 
     /// <summary>
     /// Ctor.
@@ -20,6 +23,8 @@ namespace BigSort.V2
     public PipelineContext()
     {
       this._completedBuckets = new List<long>();
+      this._tcsInfixesReady = new TaskCompletionSource<long[]>();
+      this._infixes = new HashSet<long>();
     }
 
     /// <summary>
@@ -76,6 +81,30 @@ namespace BigSort.V2
         throw new NotImplementedException();
       }
       this._completedBuckets.Add(infix);
+    }
+
+    /// <summary>
+    /// IPipelineContext.
+    /// </summary>
+    public Task<long[]> GetAllInfixesAsync()
+    {
+      return this._tcsInfixesReady.Task;
+    }
+
+    /// <summary>
+    /// IPipelineContext.
+    /// </summary>
+    public void AddInfix(long infix)
+    {
+      this._infixes.Add(infix);
+    }
+
+    /// <summary>
+    /// IPipelineContext.
+    /// </summary>
+    public void OnInfixesReady()
+    {
+      this._tcsInfixesReady.SetResult(this._infixes.ToArray());
     }
   }
 }
