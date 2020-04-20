@@ -40,14 +40,6 @@ namespace BigSort.V2.Blocks
           BoundedCapacity = 1,
           EnsureOrdered = true
         });
-      result.Completion.ContinueWith(t =>
-        {
-          Console.WriteLine($"Completing buffer. Input count: {result.InputCount}, output count: {result.OutputCount}");
-        },
-        default,
-        TaskContinuationOptions.ExecuteSynchronously,
-        TaskScheduler.Default
-      );
 
       return result;
     }

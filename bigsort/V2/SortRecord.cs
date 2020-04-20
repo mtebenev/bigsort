@@ -15,8 +15,8 @@ namespace BigSort.V2
     /// </summary>
     public SortRecord(string s)
     {
-      var dotPos = s.IndexOf('.');
-      var span = s.AsSpan(dotPos + 2, 4); // Dot + space
+      this.DotPos = s.IndexOf('.');
+      var span = s.AsSpan(this.DotPos + 2, 4); // Dot + space
       this.Infix = MemoryMarshal.Cast<char, long>(span)[0];
       this.Value = s;
     }
@@ -25,6 +25,11 @@ namespace BigSort.V2
     /// The infix.
     /// </summary>
     public long Infix { get; }
+
+    /// <summary>
+    /// The position of the string part (after dot).
+    /// </summary>
+    public int DotPos { get; }
 
     /// <summary>
     /// The whole string value.

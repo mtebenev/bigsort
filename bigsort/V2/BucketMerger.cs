@@ -17,22 +17,15 @@ namespace BigSort.V2
     /// </summary>
     public static void MergeKWay(IList<string> filePaths, string outFilePath)
     {
-      try
-      {
+      var sources = filePaths
+         .Select(p => File
+         .ReadLines(p))
+         .ToList();
 
-        var sources = filePaths
-           .Select(p => File
-           .ReadLines(p))
-           .ToList();
-
-        var e1 = sources[0];
-        var erest = sources.Skip(1).ToArray();
-        var target = e1.SortedMerge(OrderByDirection.Ascending, erest);
-        File.WriteAllLines(outFilePath, target);
-      }
-      catch(Exception)
-      {
-      }
+      var e1 = sources[0];
+      var erest = sources.Skip(1).ToArray();
+      var target = e1.SortedMerge(OrderByDirection.Ascending, erest);
+      File.WriteAllLines(outFilePath, target);
     }
 
     /// <summary>
@@ -71,8 +64,10 @@ namespace BigSort.V2
 
     private static Task<string> MergeFilesAsync(string path1, string path2)
     {
-      var enu1 = File.ReadLines(path1);
-      var enu2 = File.ReadLines(path2);
+      var enu1 = File.ReadLines(path1)
+        .Select(s => new SortRecord(s));
+      var enu2 = File.ReadLines(path2)
+        .Select(s => new SortRecord(s));
 
       var outFileName = $@"c:\_sorting\chunks\{new Random().Next()}.txt";
 
@@ -80,7 +75,9 @@ namespace BigSort.V2
       {
         throw new Exception("Chunk file already exists.");
       }
-      var mergeEnumeragele = enu1.SortedMerge(OrderByDirection.Ascending, enu2);
+      var comparer = new SortRecordComparer();
+      var mergeEnumeragele = enu1.SortedMerge(OrderByDirection.Ascending, enu2)
+        .Select(sr => sr.Value);
       File.WriteAllLines(outFileName, mergeEnumeragele);
 
       return Task.FromResult(outFileName);

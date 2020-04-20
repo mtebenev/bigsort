@@ -44,7 +44,6 @@ namespace BigSort.V2.Blocks
     private BucketMergeEvent Execute(ChunkFlushEvent[] events)
     {
       BucketMergeEvent result;
-      Console.WriteLine($"BucketMergeBlock.Execute(). Files: {events.Length}");
 
       using(Markers.EnterSpan("Bucket merge"))
       {
