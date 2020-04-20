@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using BigSort.V2;
 using BigSort.V2.Events;
@@ -12,6 +13,9 @@ namespace BigSort.Common
   /// </summary>
   internal class SourceReader
   {
+    /// <summary>
+    /// Starts reading synchronously.
+    /// </summary>
     public void Start(string inFilePath, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
     {
       var logger = pipelineContext.LoggerFactory.CreateLogger(nameof(SourceReader));
@@ -60,6 +64,17 @@ namespace BigSort.Common
         Markers.WriteFlag("Reading completed.");
         logger.LogInformation("Reading completed.");
       }
+    }
+
+    /// <summary>
+    /// Starts reading process asynchronously.
+    /// </summary>
+    public Task StartAsync(string inFilePath, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
+    {
+      return Task.Run(() =>
+      {
+        Start(inFilePath, pipelineContext, target);
+      });
     }
   }
 }

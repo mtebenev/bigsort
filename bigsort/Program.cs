@@ -8,7 +8,8 @@ namespace bigsort
 {
   [Command("bigsort")]
   [Subcommand(
-    typeof(CommandMergeSort)
+    typeof(CommandMergeSort),
+    typeof(CommandValidate)
   )]
   class Program
   {
