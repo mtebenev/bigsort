@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.V2.Events;
+using Microsoft.Extensions.Logging;
 
 namespace BigSort.V2.Blocks
 {
@@ -13,6 +14,7 @@ namespace BigSort.V2.Blocks
   {
     private readonly Dictionary<long, List<SortRecord>> _buckets;
     private readonly IPipelineContext _pipelineContext;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Ctor.
@@ -21,6 +23,7 @@ namespace BigSort.V2.Blocks
     {
       this._buckets = new Dictionary<long, List<SortRecord>>();
       this._pipelineContext = pipelineContext;
+      this._logger = pipelineContext.LoggerFactory.CreateLogger(nameof(Blocks.StringBufferBlock));
     }
 
     /// <summary>
@@ -47,9 +50,11 @@ namespace BigSort.V2.Blocks
     /// </summary>
     public IEnumerable<SortBucket> Execute(BufferReadEvent evt)
     {
+      this._logger.LogInformation("Start string buffer processing.");
       this.PushNewRecords(evt.Buffer);
       var flushedRecords = this.FlushBuckets(evt.IsReadCompleted);
 
+      this._logger.LogInformation("Finished string buffer processing.");
       return flushedRecords;
     }
 
@@ -95,6 +100,7 @@ namespace BigSort.V2.Blocks
       {
         this._buckets.Remove(fb.Infix);
         this._pipelineContext.AddInfix(fb.Infix);
+        this._logger.LogDebug("Flushed block, infix: {infix}", InfixUtils.InfixToString(fb.Infix));
       }
 
       if(isReadingCompleted)

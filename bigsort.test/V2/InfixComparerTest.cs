@@ -17,12 +17,12 @@ namespace BigSort.Test.V2
         "cccc",
         "bbbb"
       };
-      var infixes = infixStrings.Select(s => TestingUtils.StringToInfix(s));
+      var infixes = infixStrings.Select(s => InfixUtils.StringToInfix(s));
 
       var comparer = new InfixComparer();
       var sortedInfixStrings = infixes
         .OrderBy(i => i, comparer)
-        .Select(i => TestingUtils.InfixToString(i))
+        .Select(i => InfixUtils.InfixToString(i))
         .ToList();
 
       var expectedInfixStrings = new[]
@@ -40,8 +40,8 @@ namespace BigSort.Test.V2
     public void Testing_Utils_Converters()
     {
       var s = "abcd";
-      var infix = TestingUtils.StringToInfix(s);
-      var s2 = TestingUtils.InfixToString(infix);
+      var infix = InfixUtils.StringToInfix(s);
+      var s2 = InfixUtils.InfixToString(infix);
 
       Assert.Equal(s, s2);
     }

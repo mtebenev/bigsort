@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace BigSort.V2
 {
@@ -16,16 +17,24 @@ namespace BigSort.V2
     private long _bucketkMerges;
     private readonly TaskCompletionSource<long[]> _tcsInfixesReady;
     private readonly HashSet<long> _infixes; // All discovered infixes.
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Ctor.
     /// </summary>
-    public PipelineContext()
+    public PipelineContext(ILoggerFactory loggerFactory)
     {
+      this.LoggerFactory = loggerFactory;
+      this._logger = loggerFactory.CreateLogger(nameof(PipelineContext));
       this._completedBuckets = new List<long>();
       this._tcsInfixesReady = new TaskCompletionSource<long[]>();
       this._infixes = new HashSet<long>();
     }
+
+    /// <summary>
+    /// IPipelineContext.
+    /// </summary>
+    public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
     /// IPipelineContext.
@@ -104,6 +113,7 @@ namespace BigSort.V2
     /// </summary>
     public void OnInfixesReady()
     {
+      this._logger.LogDebug("Infixes collected.");
       this._tcsInfixesReady.SetResult(this._infixes.ToArray());
     }
   }

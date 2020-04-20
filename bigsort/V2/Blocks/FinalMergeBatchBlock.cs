@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using BigSort.V2.Events;
+using Microsoft.Extensions.Logging;
 using MoreLinq;
 
 namespace BigSort.V2.Blocks
@@ -17,6 +18,7 @@ namespace BigSort.V2.Blocks
     /// </summary>
     public static IPropagatorBlock<BucketMergeEvent, BucketMergeEvent[]> Create(IPipelineContext pipelineContext)
     {
+      var logger = pipelineContext.LoggerFactory.CreateLogger(nameof(FinalMergeBatchBlock));
       var bucketMergeEvents = new List<BucketMergeEvent>();
       var outgoingBlock = new BufferBlock<BucketMergeEvent[]>(new DataflowBlockOptions { EnsureOrdered = true });
       var incomingBlock = new ActionBlock<BucketMergeEvent>(evt =>
@@ -34,6 +36,7 @@ namespace BigSort.V2.Blocks
           .OrderBy(e => e.Infix, comparer)
           .ToArray();
           await outgoingBlock.SendAsync(orderedBuckets).ConfigureAwait(false);
+          logger.LogDebug("Sent batch to the final merge.");
         }
         else if(t.IsFaulted)
         {

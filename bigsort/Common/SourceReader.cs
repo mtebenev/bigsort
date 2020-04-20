@@ -4,6 +4,7 @@ using System.Threading.Tasks.Dataflow;
 using BigSort.V2;
 using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
+using Microsoft.Extensions.Logging;
 
 namespace BigSort.Common
 {
@@ -14,10 +15,12 @@ namespace BigSort.Common
   {
     public void Start(string inFilePath, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
     {
+      var logger = pipelineContext.LoggerFactory.CreateLogger(nameof(SourceReader));
+      logger.LogInformation("Started reading the source file.");
       using(var sr = File.OpenText(inFilePath))
       {
-        var splitBufferSize = 1000000; // 19mb?
-        //var splitBufferSize = 6000000; // 113mb
+        //var splitBufferSize = 1000000; // 19mb?
+        var splitBufferSize = 6000000; // 113mb
         //var splitBufferSize = 12000000; // 226mb
         var memBuffer = new string[splitBufferSize];
 
@@ -33,6 +36,7 @@ namespace BigSort.Common
             var evt = new BufferReadEvent(splitBuffer, sr.EndOfStream);
             target.Post(evt);
             pipelineContext.AddBlockReads();
+            logger.LogDebug("Pushed string buffer. size: {size}, final: {isFinal}", splitBufferSize, sr.EndOfStream);
 
             memBuffer = new string[splitBufferSize];
             splitBufferPos = 0;
@@ -48,13 +52,14 @@ namespace BigSort.Common
           var evt = new BufferReadEvent(splitBuffer, true);
           target.Post(evt);
           pipelineContext.AddBlockReads();
+          logger.LogDebug("Pushed string buffer. size: {size}, final: {isFinal}", splitBufferPos, true);
         }
 
         target.Complete();
 
         // Visualizer
         Markers.WriteFlag("Reading completed.");
-        Console.WriteLine("Reading completed.");
+        logger.LogInformation("Reading completed.");
       }
     }
   }

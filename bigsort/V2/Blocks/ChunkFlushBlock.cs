@@ -4,6 +4,7 @@ using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
+using Microsoft.Extensions.Logging;
 using StackExchange.Profiling;
 
 namespace BigSort.V2.Blocks
@@ -14,13 +15,15 @@ namespace BigSort.V2.Blocks
   internal class ChunkFlushBlock
   {
     private readonly string _tempDirectoryPath;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Ctor.
     /// </summary>
-    private ChunkFlushBlock(string tempDirectoryPath)
+    private ChunkFlushBlock(string tempDirectoryPath, IPipelineContext pipelineContext)
     {
       this._tempDirectoryPath = tempDirectoryPath;
+      this._logger = pipelineContext.LoggerFactory.CreateLogger(nameof(Blocks.ChunkFlushBlock));
     }
 
     /// <summary>
@@ -28,7 +31,7 @@ namespace BigSort.V2.Blocks
     /// </summary>
     public static TransformBlock<SortBucket, ChunkFlushEvent> Create(MergeSortOptions options, IPipelineContext pipelineContext)
     {
-      var block = new ChunkFlushBlock(options.TempDirectoryPath);
+      var block = new ChunkFlushBlock(options.TempDirectoryPath, pipelineContext);
       var result = new TransformBlock<SortBucket, ChunkFlushEvent>(
         (bucket) => block.Execute(bucket, pipelineContext),
         new ExecutionDataflowBlockOptions { EnsureOrdered = true });
@@ -38,6 +41,7 @@ namespace BigSort.V2.Blocks
 
     private ChunkFlushEvent Execute(SortBucket bucket, IPipelineContext pipelineContext)
     {
+      this._logger.LogDebug("Flushing chunk, infix: {infix}, final: {isFinal}", InfixUtils.InfixToString(bucket.Infix), bucket.IsFinalChunk);
       // TODOA: diagnostics
       if(pipelineContext.IsBucketFlushed(bucket.Infix))
       {

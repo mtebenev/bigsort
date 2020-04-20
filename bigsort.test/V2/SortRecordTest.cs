@@ -18,7 +18,7 @@ namespace BigSort.Test.V2
     public void Create_Infix()
     {
       var r = new SortRecord("123. abcd");
-      var expectedInfix = TestingUtils.StringToInfix("abcd");
+      var expectedInfix = InfixUtils.StringToInfix("abcd");
 
       Assert.Equal(expectedInfix, r.Infix);
     }

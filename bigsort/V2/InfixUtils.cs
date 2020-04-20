@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Text;
 
-namespace BigSort.Test.V2
+namespace BigSort.V2
 {
   /// <summary>
-  /// Common helpers for testing.
+  /// Infix <-> string conversion.
   /// </summary>
-  public static class TestingUtils
+  internal static class InfixUtils
   {
+    /// <summary>
+    /// String -> infix conversion.
+    /// </summary>
     public static long StringToInfix(string s)
     {
       var infixBytes = Encoding.Unicode.GetBytes(s);
@@ -16,6 +19,9 @@ namespace BigSort.Test.V2
       return result;
     }
 
+    /// <summary>
+    /// Infix -> string conversion.
+    /// </summary>
     public static string InfixToString(long infix)
     {
       var infixBytes = BitConverter.GetBytes(infix);

@@ -5,6 +5,7 @@ using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
+using Microsoft.Extensions.Logging;
 
 namespace BigSort.V2.Blocks
 {
@@ -15,6 +16,7 @@ namespace BigSort.V2.Blocks
   {
     private readonly string _tempDirectoryPath;
     private readonly IPipelineContext _pipelineContext;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Ctor.
@@ -23,6 +25,7 @@ namespace BigSort.V2.Blocks
     {
       this._tempDirectoryPath = tempDirectoryPath;
       this._pipelineContext = pipelineContext;
+      this._logger = pipelineContext.LoggerFactory.CreateLogger(nameof(Blocks.BucketMergeBlock));
     }
 
     /// <summary>
@@ -43,6 +46,7 @@ namespace BigSort.V2.Blocks
 
     private BucketMergeEvent Execute(ChunkFlushEvent[] events)
     {
+      this._logger.LogDebug("Merging bucket, infix: {infix}", InfixUtils.InfixToString(events.First().Infix));
       BucketMergeEvent result;
 
       using(Markers.EnterSpan("Bucket merge"))

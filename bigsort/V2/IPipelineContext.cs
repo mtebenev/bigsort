@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace BigSort.V2
 {
@@ -7,6 +8,8 @@ namespace BigSort.V2
   /// </summary>
   internal interface IPipelineContext
   {
+    ILoggerFactory LoggerFactory { get; }
+
     bool IsBucketFlushed(long infix);
     void SetBucketFlushed(long infix);
 
