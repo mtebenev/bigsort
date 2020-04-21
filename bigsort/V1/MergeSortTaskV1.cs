@@ -5,13 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BigSort.Common;
-using Microsoft.Extensions.Options;
 using StackExchange.Profiling;
 
 namespace BigSort.V1
 {
   /// <summary>
-  /// Merge sort V1 (classic).
+  /// Merge sort V1 (a la classic). This code should not be considered as a valid task soution. I've realized
+  /// that it does not meet the performance requirements early and dropped it in favor of the bucket sort (V2).
+  /// I'm keeping here for reference purposes only.
   /// </summary>
   internal class MergeSortTaskV1 : IMergeSortTask
   {

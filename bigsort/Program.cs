@@ -9,7 +9,9 @@ namespace bigsort
   [Command("bigsort")]
   [Subcommand(
     typeof(CommandMergeSort),
-    typeof(CommandValidate)
+    typeof(CommandValidate),
+    typeof(CommandCheck),
+    typeof(CommandGenerate)
   )]
   class Program
   {
