@@ -16,7 +16,28 @@ namespace BigSort.V2
       {
         var span1 = x.Value.AsSpan(0, x.DotPos);
         var span2 = y.Value.AsSpan(0, y.DotPos);
-        result = span1.CompareTo(span2, StringComparison.Ordinal);
+        if(span1.Length == span2.Length)
+        {
+          for(int i = 0; i < span1.Length; i++)
+          {
+            var n1 = span1[i] - '0';
+            var n2 = span2[i] - '0';
+            if(n1 > n2)
+            {
+              result = 1;
+              break;
+            }
+            else if(n1 < n2)
+            {
+              result = -1;
+              break;
+            }
+          }
+        }
+        else
+        {
+          result = span1.Length > span2.Length ? 1 : -1;
+        }
       }
       return result;
     }

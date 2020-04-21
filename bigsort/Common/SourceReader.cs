@@ -15,16 +15,15 @@ namespace BigSort.Common
   {
     /// <summary>
     /// Starts reading synchronously.
+    /// <paramref name="blockSize">Number of lines in one block</paramref>
     /// </summary>
-    public void Start(string inFilePath, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
+    public void Start(string inFilePath, int blockSize, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
     {
       var logger = pipelineContext.LoggerFactory.CreateLogger(nameof(SourceReader));
       logger.LogInformation("Started reading the source file.");
+      var splitBufferSize = blockSize;
       using(var sr = File.OpenText(inFilePath))
       {
-        //var splitBufferSize = 1000000; // 19mb?
-        var splitBufferSize = 6000000; // 113mb
-        //var splitBufferSize = 12000000; // 226mb
         var memBuffer = new string[splitBufferSize];
 
         var s = string.Empty;
@@ -69,11 +68,11 @@ namespace BigSort.Common
     /// <summary>
     /// Starts reading process asynchronously.
     /// </summary>
-    public Task StartAsync(string inFilePath, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
+    public Task StartAsync(string inFilePath, int blockSize, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
     {
       return Task.Run(() =>
       {
-        Start(inFilePath, pipelineContext, target);
+        Start(inFilePath, blockSize, pipelineContext, target);
       });
     }
   }

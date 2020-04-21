@@ -21,11 +21,15 @@ namespace BigSort.V2
         .SetMinimumLevel(LogLevel.Debug);        
       });
 
+      //var splitBufferSize = 1000000; // 19mb?
+      var blockSize = 6000000; // 113mb
+      //var splitBufferSize = 12000000; // 226mb
+
       var context = new PipelineContext(loggerFactory);
       var reader = new SourceReader();
       var (startBlock, finishBlock) = PipelineBuilder.Build(options, context);
 
-      reader.Start(options.InFilePath, context, startBlock);
+      reader.Start(options.InFilePath, blockSize, context, startBlock);
 
       await finishBlock.Completion;
       context.Stats.PrintStats();

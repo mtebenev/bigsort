@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks.Dataflow;
+using BigSort.Common;
 using BigSort.V2.Events;
 
 namespace BigSort.Validation
@@ -9,8 +10,9 @@ namespace BigSort.Validation
   /// </summary>
   internal class ComparisonBlock
   {
-    public static ITargetBlock<Tuple<DataRecord[], BufferReadEvent>> Create()
+    public static ITargetBlock<Tuple<DataRecord[], BufferReadEvent>> Create(long fileSize)
     {
+      var progressCounter = new FileProgressCounter(fileSize);
       var block = new ActionBlock<Tuple<DataRecord[], BufferReadEvent>>((t) =>
       {
         if(t.Item1.Length != t.Item2.Buffer.BufferSize)
@@ -22,16 +24,14 @@ namespace BigSort.Validation
         for(int i = 0; i < t.Item1.Length; i++)
         {
           var dotPos = t.Item2.Buffer.Buffer[i].IndexOf(".");
-          var dbNumStr = t.Item1[i].DataNum.ToString();
+          var parsedNum = int.Parse(t.Item2.Buffer.Buffer[i].AsSpan(0, dotPos));
 
           // Number comparison
-          var numEquality = string.CompareOrdinal(
-            dbNumStr,
-            0,
-            t.Item2.Buffer.Buffer[i],
-            0,
-            Math.Max(dbNumStr.Length, dotPos)
-          );
+          var numEquality = t.Item1[i].DataNum > parsedNum
+          ? 1
+          : t.Item1[i].DataNum == parsedNum
+            ? 0
+            : -1;
 
           // String comparing
           var strEquality = string.CompareOrdinal(
@@ -42,16 +42,20 @@ namespace BigSort.Validation
             int.MaxValue
           );
 
+          // Track progress
+          progressCounter.OnLineProcessed(t.Item2.Buffer.Buffer[i]);
+
           if(numEquality != 0 || strEquality != 0)
           {
             var errMessage = $@"Validation failed:
-line: xxx
-expected: {t.Item1[i].DataNum}. {t.Item1[i].DataStr}
+line: {progressCounter.CurrentLine}
+expected: {t.Item1[i].DataNum}.{t.Item1[i].DataStr}
 actual: {t.Item2.Buffer.Buffer[i]}
 ";
             throw new InvalidOperationException(errMessage);
           }
         }
+        Console.WriteLine($"Progress: {progressCounter.GetProgressText()}");
       });
 
       return block;
