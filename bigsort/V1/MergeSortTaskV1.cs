@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BigSort.Common;
+using Microsoft.Extensions.Logging;
 using StackExchange.Profiling;
 
 namespace BigSort.V1
@@ -32,7 +33,7 @@ namespace BigSort.V1
     /// <summary>
     /// IMergeSortTask.
     /// </summary>
-    public async Task ExecuteAsync(MergeSortOptions options)
+    public async Task ExecuteAsync(IFileContext fileContext, ILoggerFactory loggerFactory, MergeSortOptions options)
     {
       using(MiniProfiler.Current.Step("Split step"))
       {

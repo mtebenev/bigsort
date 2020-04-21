@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace BigSort.Common
 {
@@ -10,6 +11,6 @@ namespace BigSort.Common
     /// <summary>
     /// Runs the merge sort.
     /// </summary>
-    Task ExecuteAsync(MergeSortOptions options);
+    Task ExecuteAsync(IFileContext fileContext, ILoggerFactory loggerFactory, MergeSortOptions options);
   }
 }

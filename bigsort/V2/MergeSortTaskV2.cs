@@ -12,15 +12,8 @@ namespace BigSort.V2
     /// <summary>
     /// IMergeSortTask.
     /// </summary>
-    public async Task ExecuteAsync(MergeSortOptions options)
+    public async Task ExecuteAsync(IFileContext fileContext, ILoggerFactory loggerFactory, MergeSortOptions options)
     {
-      var loggerFactory = LoggerFactory.Create(builder =>
-      {
-        builder
-        .AddConsole()
-        .SetMinimumLevel(LogLevel.Debug);        
-      });
-
       //var splitBufferSize = 1000000; // 19mb?
       var blockSize = 6000000; // 113mb
       //var splitBufferSize = 12000000; // 226mb
