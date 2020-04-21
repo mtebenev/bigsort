@@ -18,11 +18,11 @@ namespace BigSort.V2
       var blockSize = 6000000; // 113mb
       //var splitBufferSize = 12000000; // 226mb
 
-      var context = new PipelineContext(loggerFactory);
+      var context = new PipelineContext(loggerFactory, fileContext);
       var reader = new SourceReader();
       var (startBlock, finishBlock) = PipelineBuilder.Build(options, context);
 
-      reader.Start(options.InFilePath, blockSize, context, startBlock);
+      reader.Start(fileContext.InFilePath, blockSize, context, startBlock);
 
       await finishBlock.Completion;
       context.Stats.PrintStats();

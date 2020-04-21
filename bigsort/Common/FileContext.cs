@@ -65,6 +65,13 @@ namespace BigSort.Common
         : this._fileSystem.Path.Combine(this._tempDirectoryPath, this._fileSystem.Path.GetRandomFileName());
 
       this._tempPaths.Add(newTempPath);
+
+      // Lazy verify for the custom temp dir.
+      if(!string.IsNullOrEmpty(this._tempDirectoryPath) && !this._fileSystem.Directory.Exists(this._tempDirectoryPath))
+      {
+        this._fileSystem.Directory.CreateDirectory(this._tempDirectoryPath);
+      }
+
       return newTempPath;
     }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
-using BigSort.Common;
 using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
@@ -15,7 +14,7 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// The factory.
     /// </summary>
-    public static ITargetBlock<BucketMergeEvent[]> Create(MergeSortOptions options)
+    public static ITargetBlock<BucketMergeEvent[]> Create(IPipelineContext pipelineContext)
     {
       var result = new ActionBlock<BucketMergeEvent[]>(events =>
       {
@@ -31,7 +30,7 @@ namespace BigSort.V2.Blocks
 
         using(Markers.EnterSpan("Final merge"))
         {
-          FinalMerger.Merge(filePaths, options.OutFilePath);
+          FinalMerger.Merge(filePaths, pipelineContext.FileContext.OutFilePath);
         }
       });
 

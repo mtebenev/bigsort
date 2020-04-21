@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.V2.Events;
@@ -14,16 +12,14 @@ namespace BigSort.V2.Blocks
   /// </summary>
   internal class BucketMergeBlock
   {
-    private readonly string _tempDirectoryPath;
     private readonly IPipelineContext _pipelineContext;
     private readonly ILogger _logger;
 
     /// <summary>
     /// Ctor.
     /// </summary>
-    private BucketMergeBlock(string tempDirectoryPath, IPipelineContext pipelineContext)
+    private BucketMergeBlock(IPipelineContext pipelineContext)
     {
-      this._tempDirectoryPath = tempDirectoryPath;
       this._pipelineContext = pipelineContext;
       this._logger = pipelineContext.LoggerFactory.CreateLogger(nameof(Blocks.BucketMergeBlock));
     }
@@ -33,7 +29,7 @@ namespace BigSort.V2.Blocks
     /// </summary>
     public static IPropagatorBlock<ChunkFlushEvent[], BucketMergeEvent> Create(MergeSortOptions options, IPipelineContext pipelineContext)
     {
-      var block = new BucketMergeBlock(options.TempDirectoryPath, pipelineContext);
+      var block = new BucketMergeBlock(pipelineContext);
       var result = new TransformBlock<ChunkFlushEvent[], BucketMergeEvent>(
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
@@ -51,7 +47,7 @@ namespace BigSort.V2.Blocks
 
       using(Markers.EnterSpan("Bucket merge"))
       {
-        var chunkFilePath = Path.Combine(this._tempDirectoryPath, $@"{new Random().Next()}.txt");
+        var chunkFilePath = this._pipelineContext.FileContext.AddTempFile();
         var filePaths = events
           .Select(e => e.FilePath)
           .ToList();

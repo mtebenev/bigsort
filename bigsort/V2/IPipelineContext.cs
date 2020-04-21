@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using BigSort.Common;
 using Microsoft.Extensions.Logging;
 
 namespace BigSort.V2
@@ -12,6 +13,11 @@ namespace BigSort.V2
     /// The logger factory instance.
     /// </summary>
     ILoggerFactory LoggerFactory { get; }
+
+    /// <summary>
+    /// The file context.
+    /// </summary>
+    IFileContext FileContext { get; }
 
     /// <summary>
     /// The pipeline statistics.

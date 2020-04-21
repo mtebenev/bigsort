@@ -82,7 +82,7 @@ namespace BigSort.V1
           }
         });
 
-        using(StreamReader sr = File.OpenText(options.InFilePath))
+        using(StreamReader sr = File.OpenText(fileContext.InFilePath))
         {
           //var splitBufferSize = 1000000; // 19mb?
           //var splitBufferSize = 2000000; // 38mb

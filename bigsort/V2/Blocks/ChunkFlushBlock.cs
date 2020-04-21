@@ -1,7 +1,5 @@
-using System;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
-using BigSort.Common;
 using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
 using Microsoft.Extensions.Logging;
@@ -14,24 +12,22 @@ namespace BigSort.V2.Blocks
   /// </summary>
   internal class ChunkFlushBlock
   {
-    private readonly string _tempDirectoryPath;
     private readonly ILogger _logger;
 
     /// <summary>
     /// Ctor.
     /// </summary>
-    private ChunkFlushBlock(string tempDirectoryPath, IPipelineContext pipelineContext)
+    private ChunkFlushBlock(IPipelineContext pipelineContext)
     {
-      this._tempDirectoryPath = tempDirectoryPath;
       this._logger = pipelineContext.LoggerFactory.CreateLogger(nameof(Blocks.ChunkFlushBlock));
     }
 
     /// <summary>
     /// The factory.
     /// </summary>
-    public static TransformBlock<SortBucket, ChunkFlushEvent> Create(MergeSortOptions options, IPipelineContext pipelineContext)
+    public static TransformBlock<SortBucket, ChunkFlushEvent> Create(IPipelineContext pipelineContext)
     {
-      var block = new ChunkFlushBlock(options.TempDirectoryPath, pipelineContext);
+      var block = new ChunkFlushBlock(pipelineContext);
       var result = new TransformBlock<SortBucket, ChunkFlushEvent>(
         (bucket) => block.Execute(bucket, pipelineContext));
 
@@ -42,7 +38,7 @@ namespace BigSort.V2.Blocks
     {
       this._logger.LogDebug("Flushing chunk, infix: {infix}", InfixUtils.InfixToString(bucket.Infix));
 
-      var chunkFilePath = Path.Combine(this._tempDirectoryPath, $@"{new Random().Next()}.txt");
+      var chunkFilePath = pipelineContext.FileContext.AddTempFile();
 
       using(Markers.EnterSpan("Bucket flush"))
       using(MiniProfiler.Current.CustomTiming("Save chunk file", ""))

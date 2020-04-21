@@ -47,9 +47,6 @@ namespace BigSort.Commands
       {
         var options = new MergeSortOptions
         {
-          InFilePath = this.InFilePath,
-          OutFilePath = this.OutFilePath,
-          TempDirectoryPath = this.TempDirectoryPath,
           MaxConcurrentJobs = Environment.ProcessorCount - 1 // Let user observe the perfmon
         };
 

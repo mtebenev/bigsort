@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BigSort.Common;
 using Microsoft.Extensions.Logging;
 
 namespace BigSort.V2
@@ -21,22 +22,27 @@ namespace BigSort.V2
     /// <summary>
     /// Ctor.
     /// </summary>
-    public PipelineContext(ILoggerFactory loggerFactory)
+    public PipelineContext(ILoggerFactory loggerFactory, IFileContext fileContext)
     {
       this.LoggerFactory = loggerFactory;
+      this.FileContext = fileContext;
       this.Stats = new Stats();
       this._logger = loggerFactory.CreateLogger(nameof(PipelineContext));
       this._tcsInfixesReady = new TaskCompletionSource<long[]>();
       this._infixes = new HashSet<long>();
       this._chunkFlushesMap = new ConcurrentDictionary<long, int>();
       this._chunkStartsMap = new ConcurrentDictionary<long, int>();
-  }
+    }
 
-  /// <summary>
-  /// IPipelineContext.
-  /// </summary>
-  public ILoggerFactory LoggerFactory { get; }
+    /// <summary>
+    /// IPipelineContext.
+    /// </summary>
+    public ILoggerFactory LoggerFactory { get; }
 
+    /// <summary>
+    /// IPipelineContext.
+    /// </summary>
+    public IFileContext FileContext { get; }
 
     /// <summary>
     /// IPipelineContext.
