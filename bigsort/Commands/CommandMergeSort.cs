@@ -32,7 +32,7 @@ namespace BigSort.Commands
       {
         builder
         .AddConsole()
-        .SetMinimumLevel(LogLevel.Debug);
+        .SetMinimumLevel(LogLevel.Information);
       });
 
       var fsContextOptions = new FileContextOptions

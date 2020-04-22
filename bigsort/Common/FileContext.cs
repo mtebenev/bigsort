@@ -53,6 +53,14 @@ namespace BigSort.Common
     /// <summary>
     /// IFileContext.
     /// </summary>
+    public long GetInFileSize()
+    {
+      return this._fileSystem.FileInfo.FromFileName(this.InFilePath).Length;
+    }
+
+    /// <summary>
+    /// IFileContext.
+    /// </summary>
     public string OutFilePath { get; }
 
     /// <summary>

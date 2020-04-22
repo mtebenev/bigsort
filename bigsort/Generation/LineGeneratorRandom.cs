@@ -8,7 +8,7 @@ namespace BigSort.Generation
   /// Generates random strings.
   /// Note: NOT thread-safe.
   /// </summary>
-  internal class TestLineGeneratorRandom : ILineGenerator
+  internal class LineGeneratorRandom : ILineGenerator
   {
     private readonly Random _random;
     private readonly StringBuilder _stringBuilder;
@@ -18,14 +18,14 @@ namespace BigSort.Generation
     /// <summary>
     /// Ctor.
     /// </summary>
-    public TestLineGeneratorRandom()
+    public LineGeneratorRandom()
     {
       this._random = new Random();
       this._stringBuilder = new StringBuilder();
     }
 
     /// <summary>
-    /// ITestLineGenerator.
+    /// ILineGenerator.
     /// </summary>
     public IEnumerable<string> GenerateLines()
     {

@@ -1,8 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
+using System.Text;
 using System.Threading.Tasks.Dataflow;
 using BigSort.V2.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
+using Microsoft.Extensions.Logging;
 
 namespace BigSort.V2.Blocks
 {
@@ -16,13 +17,16 @@ namespace BigSort.V2.Blocks
     /// </summary>
     public static ITargetBlock<BucketMergeEvent[]> Create(IPipelineContext pipelineContext)
     {
+      var logger = pipelineContext.LoggerFactory.CreateLogger(nameof(FinalMergeBlock));
       var result = new ActionBlock<BucketMergeEvent[]>(events =>
       {
-        Console.WriteLine($"FinalMergeBlock.Execute(). Files: ");
+        var sb = new StringBuilder();
+        sb.AppendLine($"FinalMergeBlock.Execute(). Files: ");
         for(var i = 0; i < events.Length; i++)
         {
-          Console.WriteLine($"File {i}: {events[i].FilePath}");
+          sb.AppendLine($"File {i}: {events[i].FilePath}");
         }
+        logger.LogDebug(sb.ToString());
 
         var filePaths = events
           .Select(e => e.FilePath)

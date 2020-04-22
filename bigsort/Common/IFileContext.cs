@@ -14,6 +14,11 @@
     /// The output file path.
     /// </summary>
     public string OutFilePath { get; }
+    
+    /// <summary>
+    /// Returns the input file size (sync).
+    /// </summary>
+    public long GetInFileSize();
 
     /// <summary>
     /// Adds unique temp file to the context.

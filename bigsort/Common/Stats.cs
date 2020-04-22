@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BigSort.V2
+namespace BigSort.Common
 {
   /// <summary>
   /// Encapsulates statistics about the sort-merge process.

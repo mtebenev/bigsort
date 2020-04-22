@@ -47,7 +47,7 @@ namespace BigSort.Commands
           this.SaveBuffer(buffer, sw);
         }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
 
-        Func<ILineGenerator> lineGeneratorFactory = () => new TestLineGeneratorRandom();
+        Func<ILineGenerator> lineGeneratorFactory = () => new LineGeneratorDictionary();
         TestDataGenerator.Start(toGenerate, lineGeneratorFactory, storeBlock);
         await storeBlock.Completion;
 
