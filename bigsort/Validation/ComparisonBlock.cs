@@ -2,6 +2,7 @@
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.V2.Events;
+using Microsoft.Extensions.Logging;
 
 namespace BigSort.Validation
 {
@@ -10,8 +11,9 @@ namespace BigSort.Validation
   /// </summary>
   internal class ComparisonBlock
   {
-    public static ITargetBlock<Tuple<DataRecord[], BufferReadEvent>> Create(long fileSize)
+    public static ITargetBlock<Tuple<DataRecord[], BufferReadEvent>> Create(ILoggerFactory loggerFactory, long fileSize)
     {
+      var logger = loggerFactory.CreateLogger(nameof(ComparisonBlock));
       var progressCounter = new FileProgressCounter(fileSize);
       var block = new ActionBlock<Tuple<DataRecord[], BufferReadEvent>>((t) =>
       {
@@ -55,7 +57,7 @@ actual: {t.Item2.Buffer.Buffer[i]}
             throw new InvalidOperationException(errMessage);
           }
         }
-        Console.WriteLine($"Progress: {progressCounter.GetProgressText()}");
+        logger.LogInformation($"Progress: {progressCounter.GetProgressText()}");
       });
 
       return block;

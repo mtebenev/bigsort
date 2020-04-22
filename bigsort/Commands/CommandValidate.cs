@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.IO;
+using System.IO.Abstractions;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
@@ -24,6 +26,14 @@ Warning! This is slow command, for development purposes only.
 ")]
   internal class CommandValidate
   {
+    [Required]
+    [Argument(0, "Input file path")]
+    public string InFilePath { get; set; }
+
+    [Required]
+    [Argument(1, "Output file path")]
+    public string OutFilePath { get; set; }
+
     public async Task OnExecuteAsync()
     {
 
@@ -31,38 +41,44 @@ Warning! This is slow command, for development purposes only.
       {
         builder
         .AddConsole()
-        .SetMinimumLevel(LogLevel.Debug);
+        .SetMinimumLevel(LogLevel.Information);
       });
       var logger = loggerFactory.CreateLogger(nameof(CommandValidate));
       IDbConnection connection = null;
 
       try
       {
-        var inFilePath = @"C:\_sorting\file.txt";
-        var outFilePath = @"C:\_sorting\out.txt";
-        var tempPath = @"c:\_sorting";
-        var databaseName = "temp.db";
-        var inFileSize = new FileInfo(inFilePath).Length;
-        var dbPath = Path.Combine(tempPath, databaseName);
-        var pushBlockSize = 10000; // Will push lines in db by blocks of the size.
-
-        if(File.Exists(dbPath))
+        var fileSystem = new FileSystem();
+        var fsContextOptions = new FileContextOptions
         {
-          File.Delete(dbPath);
+          InFilePath = this.InFilePath,
+          UseOutFile = false
+        };
+
+        if(!fileSystem.File.Exists(this.OutFilePath))
+        {
+          throw new InvalidOperationException($"Could not open out file: {this.OutFilePath}");
         }
 
-        connection = this.CreateDatabase(dbPath);
-        var reader = new SourceReader();
+        using(var fileContext = new FileContext(fileSystem, loggerFactory, fsContextOptions))
+        {
+          logger.LogInformation($"Started validating {this.OutFilePath} against {fileContext.InFilePath}");
 
-        // Push records in db
-        var context = new PipelineContext(loggerFactory);
-        var dbPusherBlock = DbPusherBlock.Create(connection, inFileSize);
-        reader.Start(inFilePath, pushBlockSize, context, dbPusherBlock);
-        await dbPusherBlock.Completion;
+          const int pushBlockSize = 10000; // Will push lines in db by blocks of the size.
+          var dbPath = fileContext.AddTempFile();
+          connection = this.CreateDatabase(dbPath);
+          var reader = new SourceReader();
 
-        // Compare database with out file
-        await this.CompareAsync(connection, context, outFilePath);
-        Console.WriteLine("The file is valid.");
+          // Push records in db
+          var context = new PipelineContext(loggerFactory, fileContext);
+          var dbPusherBlock = DbPusherBlock.Create(loggerFactory, connection, fileContext.GetInFileSize());
+          reader.Start(fileContext.InFilePath, pushBlockSize, context, dbPusherBlock);
+          await dbPusherBlock.Completion;
+
+          // Compare database with out file
+          await this.CompareAsync(connection, context, this.OutFilePath);
+          logger.LogInformation("The file is valid.");
+        }
       }
       catch(Exception e)
       {
@@ -112,7 +128,7 @@ Warning! This is slow command, for development purposes only.
       var joinBlock = new JoinBlock<DataRecord[], BufferReadEvent>();
 
       // Compare the records.
-      var comparisonBlock = ComparisonBlock.Create(fileSize);
+      var comparisonBlock = ComparisonBlock.Create(pipelineContext.LoggerFactory, fileSize);
       joinBlock.LinkTo(comparisonBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // Read db records

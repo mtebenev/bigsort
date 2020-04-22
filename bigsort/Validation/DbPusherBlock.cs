@@ -4,6 +4,7 @@ using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.V2.Events;
 using Dapper.Contrib.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace BigSort.Validation
 {
@@ -15,22 +16,23 @@ namespace BigSort.Validation
     /// <summary>
     /// The factory.
     /// </summary>
-    public static ITargetBlock<BufferReadEvent> Create(IDbConnection connection, long fileSize)
+    public static ITargetBlock<BufferReadEvent> Create(ILoggerFactory loggerFactory, IDbConnection connection, long fileSize)
     {
+      var logger = loggerFactory.CreateLogger(nameof(DbPusherBlock));
       var progressCounter = new FileProgressCounter(fileSize);
       var dbPusherBlock = new ActionBlock<BufferReadEvent>(evt =>
       {
-        DbPusherBlock.InsertBlock(connection, evt, progressCounter);
+        DbPusherBlock.InsertBlock(logger, connection, evt, progressCounter);
       });
 
       return dbPusherBlock;
     }
 
-    private static void InsertBlock(IDbConnection connection, BufferReadEvent evt, FileProgressCounter progressCounter)
+    private static void InsertBlock(ILogger logger, IDbConnection connection, BufferReadEvent evt, FileProgressCounter progressCounter)
     {
       try
       {
-        Console.WriteLine("Inserting lines block to sqlite database...");
+        logger.LogInformation("Inserting lines block to sqlite database...");
         connection.Open();
         using(var transaction = connection.BeginTransaction())
         {
@@ -40,7 +42,7 @@ namespace BigSort.Validation
           {
             if(i > 0 && i % 100000 == 0)
             {
-              Console.WriteLine($"Progress: {progressCounter.GetProgressText()}");
+              logger.LogDebug($"Progress: {progressCounter.GetProgressText()}");
             }
 
             dotPos = evt.Buffer.Buffer[i].IndexOf('.');
