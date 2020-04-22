@@ -2,11 +2,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.Generation;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.ConcurrencyVisualizer.Instrumentation;
 using Microsoft.Extensions.Logging;
 
 namespace BigSort.Commands
@@ -34,6 +32,7 @@ namespace BigSort.Commands
         .SetMinimumLevel(LogLevel.Debug);
       });
       var logger = loggerFactory.CreateLogger(nameof(CommandGenerate));
+      StreamWriter streamWriter = null;
 
       try
       {
@@ -41,18 +40,13 @@ namespace BigSort.Commands
         var toGenerate = (long)StringUtils.ParseFileSize(limitSize, 1024);
         logger.LogInformation($"Generating file, size=~{limitSize}");
 
-        var sw = new StreamWriter(this.OutFilePath, false);
-        var storeBlock = new ActionBlock<StringBuffer>(buffer =>
-        {
-          this.SaveBuffer(buffer, sw);
-        }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
+        streamWriter = new StreamWriter(this.OutFilePath, false);
 
         Func<ILineGenerator> lineGeneratorFactory = () => new LineGeneratorDictionary();
-        TestDataGenerator.Start(toGenerate, lineGeneratorFactory, storeBlock);
-        await storeBlock.Completion;
+        var finalBlock = TestDataGenerator.Start(toGenerate, lineGeneratorFactory, streamWriter);
+        await finalBlock.Completion;
 
-        sw.Flush();
-        sw.Dispose();
+        streamWriter.Flush();
 
         logger.LogInformation("The file has been generated successfully.");
       }
@@ -62,17 +56,7 @@ namespace BigSort.Commands
       }
       finally
       {
-      }
-    }
-
-    private void SaveBuffer(StringBuffer buffer, StreamWriter streamWriter)
-    {
-      using(Markers.EnterSpan("Saving data buffer"))
-      {
-        for(int i = 0; i < buffer.BufferSize; i++)
-        {
-          streamWriter.WriteLine(buffer.Buffer[i]);
-        }
+        streamWriter?.Dispose();
       }
     }
   }

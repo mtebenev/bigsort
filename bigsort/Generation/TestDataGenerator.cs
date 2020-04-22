@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
@@ -15,7 +16,7 @@ namespace BigSort.Generation
     /// <summary>
     /// Generates the data.
     /// </summary>
-    public static void Start(long toGenerateTotal, Func<ILineGenerator> generatorFactory, ITargetBlock<StringBuffer> target)
+    public static ITargetBlock<StringBuffer> Start(long toGenerateTotal, Func<ILineGenerator> generatorFactory, StreamWriter streamWriter)
     {
       // The batch block will split the whole volume by chunks
       var generatorBatchBlock = new TransformManyBlock<long, long>(size =>
@@ -37,13 +38,21 @@ namespace BigSort.Generation
         return buffer;
       }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 8 });
 
+      // The writer block will flush the data
+      var writerBlock = new ActionBlock<StringBuffer>(buffer =>
+      {
+        TestDataGenerator.SaveBuffer(buffer, streamWriter);
+      }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
+
       // Configure the pipeline
       generatorBatchBlock.LinkTo(generatorBlock, new DataflowLinkOptions { PropagateCompletion = true });
-      generatorBlock.LinkTo(target, new DataflowLinkOptions { PropagateCompletion = true });
+      generatorBlock.LinkTo(writerBlock, new DataflowLinkOptions { PropagateCompletion = true });
 
       // Start the pipeline
       generatorBatchBlock.Post(toGenerateTotal);
       generatorBatchBlock.Complete();
+
+      return writerBlock;
     }
 
     /// <summary>
@@ -69,6 +78,17 @@ namespace BigSort.Generation
 
         var stringBuffer = new StringBuffer(lines, lines.Length);
         return (stringBuffer, finalLength);
+      }
+    }
+
+    private static void SaveBuffer(StringBuffer buffer, StreamWriter streamWriter)
+    {
+      using(Markers.EnterSpan("Saving data buffer"))
+      {
+        for(int i = 0; i < buffer.BufferSize; i++)
+        {
+          streamWriter.WriteLine(buffer.Buffer[i]);
+        }
       }
     }
   }
