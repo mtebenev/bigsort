@@ -5,7 +5,7 @@ namespace BigSort.Generation
   /// <summary>
   /// Generates test data lines.
   /// </summary>
-  internal interface ITestLineGenerator
+  internal interface ILineGenerator
   {
     /// <summary>
     /// Creates the line generation enumerable.

@@ -6,6 +6,7 @@ using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.Generation;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.ConcurrencyVisualizer.Instrumentation;
 using Microsoft.Extensions.Logging;
 
 namespace BigSort.Commands
@@ -43,14 +44,11 @@ namespace BigSort.Commands
         var sw = new StreamWriter(this.OutFilePath, false);
         var storeBlock = new ActionBlock<StringBuffer>(buffer =>
         {
-          for(int i = 0; i < buffer.BufferSize; i++)
-          {
-            sw.WriteLine(buffer.Buffer[i]);
-          }
-        });
+          this.SaveBuffer(buffer, sw);
+        }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
 
-        var generator = new TestLineGeneratorRandom();
-        TestDataGenerator.Start(toGenerate, generator, storeBlock);
+        Func<ILineGenerator> lineGeneratorFactory = () => new TestLineGeneratorRandom();
+        TestDataGenerator.Start(toGenerate, lineGeneratorFactory, storeBlock);
         await storeBlock.Completion;
 
         sw.Flush();
@@ -64,6 +62,17 @@ namespace BigSort.Commands
       }
       finally
       {
+      }
+    }
+
+    private void SaveBuffer(StringBuffer buffer, StreamWriter streamWriter)
+    {
+      using(Markers.EnterSpan("Saving data buffer"))
+      {
+        for(int i = 0; i < buffer.BufferSize; i++)
+        {
+          streamWriter.WriteLine(buffer.Buffer[i]);
+        }
       }
     }
   }
