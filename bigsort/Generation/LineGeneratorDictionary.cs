@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BigSort.Generation
@@ -11,33 +11,48 @@ namespace BigSort.Generation
   internal class LineGeneratorDictionary : ILineGenerator
   {
     private readonly Random _random;
-    private readonly StringBuilder _stringBuilder;
     private readonly string[] _allWords;
-
+    private readonly int _maxStringLength;
+    
     /// <summary>
     /// Ctor.
     /// </summary>
-    public LineGeneratorDictionary()
+    public LineGeneratorDictionary(string[] dictionary)
     {
       this._random = new Random();
-      this._stringBuilder = new StringBuilder();
-      this._allWords = new[] { "Apple", "Banana", "Canon", "Dominant", "Ellipse", "Frozen", "Gilbert", "Hannover" };
+      this._allWords = (string[])dictionary.Clone();
+      this._maxStringLength = this._allWords.Max(s => s.Length) + 20 + 2 + 1; // Max string length is the longest word + long for number + dot + space + line end
     }
 
     /// <summary>
     /// ILineGenerator.
     /// </summary>
-    public IEnumerable<string> GenerateLines()
+    public int FillBuffer(Span<char> memBuffer, long toFill)
     {
-      while(true)
+      var workSpan = memBuffer;
+      while(workSpan.Length > this._maxStringLength)
       {
-        this._stringBuilder.Clear();
-        this._stringBuilder.Append(this._random.Next());
-        this._stringBuilder.Append(". ");
-        this._stringBuilder.Append(this._allWords[this._random.Next(this._allWords.Length - 1)]);
+        // The number
+        var rn = this._random.Next();
+        rn.TryFormat(workSpan, out var written);
+        workSpan = workSpan.Slice(written);
 
-        yield return this._stringBuilder.ToString();
+        // Dot
+        workSpan[0] = '.';
+        workSpan[1] = ' ';
+        workSpan = workSpan.Slice(2);
+
+        // The string
+        rn = this._random.Next(this._allWords.Length - 1);
+        this._allWords[rn].AsSpan().CopyTo(workSpan);
+        workSpan = workSpan.Slice(this._allWords[rn].Length);
+
+        // the line ending
+        workSpan[0] = '\n';
+        workSpan = workSpan.Slice(1);
       }
+
+      return memBuffer.Length - workSpan.Length;
     }
   }
 }

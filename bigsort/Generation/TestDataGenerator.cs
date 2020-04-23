@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
@@ -16,7 +18,7 @@ namespace BigSort.Generation
     /// <summary>
     /// Generates the data.
     /// </summary>
-    public static ITargetBlock<StringBuffer> Start(long toGenerateTotal, Func<ILineGenerator> generatorFactory, StreamWriter streamWriter)
+    public static ITargetBlock<StringBuffer2> Start(long toGenerateTotal, Func<ILineGenerator> generatorFactory, StreamWriter streamWriter)
     {
       // The batch block will split the whole volume by chunks
       var generatorBatchBlock = new TransformManyBlock<long, long>(size =>
@@ -30,16 +32,22 @@ namespace BigSort.Generation
         return chunkSizes;
       });
 
-      // The generator block will produce data for a single chunk
-      var generatorBlock = new TransformBlock<long, StringBuffer>(bufferSize =>
+      // The generator block will produce data for a single chunk of a fixed size
+      var generatorBlock = new TransformManyBlock<long, StringBuffer2>(chunkSize =>
       {
         var lineGenerator = generatorFactory();
-        var (buffer, generatedBlockSize) = TestDataGenerator.GenerateBuffer(lineGenerator, bufferSize);
-        return buffer;
-      }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 8 });
+        var buffers = TestDataGenerator.GenerateBuffers(lineGenerator, chunkSize);
+        return buffers;
+      }, 
+      new ExecutionDataflowBlockOptions 
+      {
+        MaxDegreeOfParallelism = 6,
+        MaxMessagesPerTask = int.MaxValue,
+        BoundedCapacity = int.MaxValue
+      });
 
       // The writer block will flush the data
-      var writerBlock = new ActionBlock<StringBuffer>(buffer =>
+      var writerBlock = new ActionBlock<StringBuffer2>(buffer =>
       {
         TestDataGenerator.SaveBuffer(buffer, streamWriter);
       }, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
@@ -56,40 +64,34 @@ namespace BigSort.Generation
     }
 
     /// <summary>
-    /// Generates lines and returns the string buffer & size of the generated block.
+    /// Produces multiple string buffers to produce a chunk of required size.
     /// Note: the result size could be slightly bigger than required, but it's not important for this task.
     /// </summary>
-    private static (StringBuffer, long) GenerateBuffer(ILineGenerator lineGenerator, long toGenerate)
+    private static IEnumerable<StringBuffer2> GenerateBuffers(ILineGenerator lineGenerator, long chunkSize)
     {
-      using(Markers.EnterSpan("Test data generation."))
+      var maxBufferSize = chunkSize / 10;
+      var totalGenerated = 0; // Count total symbols in this chunk
+      while(totalGenerated < chunkSize)
       {
-        // Take the next line, add its length + 2 for line end
-        // Repeat until we reach the required buffer size.
-        var finalLength = 0;
+        var memBuffer = MemoryPool<char>.Shared.Rent((int)maxBufferSize);
 
-        var lines = lineGenerator
-          .GenerateLines()
-          .TakeUntil(s =>
-          {
-            finalLength += s.Length + 2;
-            return finalLength > toGenerate;
-          })
-          .ToArray();
+        var generatedSymbols = lineGenerator.FillBuffer(memBuffer.Memory.Span, chunkSize - totalGenerated);
+        totalGenerated += generatedSymbols;
 
-        var stringBuffer = new StringBuffer(lines, lines.Length);
-        return (stringBuffer, finalLength);
+        var stringBuffer = new StringBuffer2(memBuffer, generatedSymbols);
+        yield return stringBuffer;
       }
     }
 
-    private static void SaveBuffer(StringBuffer buffer, StreamWriter streamWriter)
+    private static void SaveBuffer(StringBuffer2 buffer, StreamWriter streamWriter)
     {
       using(Markers.EnterSpan("Saving data buffer"))
       {
-        for(int i = 0; i < buffer.BufferSize; i++)
-        {
-          streamWriter.WriteLine(buffer.Buffer[i]);
-        }
+        var span = buffer.Buffer.Memory.Span.Slice(0, buffer.SymbolCount);
+        StringBufferWriter.WriteBuffer(span, streamWriter);
       }
+
+      buffer.Buffer.Dispose();
     }
   }
 }

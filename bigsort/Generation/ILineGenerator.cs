@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace BigSort.Generation
 {
@@ -8,8 +9,8 @@ namespace BigSort.Generation
   internal interface ILineGenerator
   {
     /// <summary>
-    /// Creates the line generation enumerable.
+    /// Fills the memory buffer with generated data.
     /// </summary>
-    IEnumerable<string> GenerateLines();
+    int FillBuffer(Span<char> memBuffer, long toFill);
   }
 }

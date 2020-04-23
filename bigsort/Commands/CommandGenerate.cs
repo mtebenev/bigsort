@@ -42,7 +42,7 @@ namespace BigSort.Commands
 
         streamWriter = new StreamWriter(this.OutFilePath, false);
 
-        Func<ILineGenerator> lineGeneratorFactory = () => new LineGeneratorDictionary();
+        Func<ILineGenerator> lineGeneratorFactory = () => new LineGeneratorDictionary(new[] { "Apple", "Banana", "Canon", "Dominant", "Ellipse", "Frozen", "Gilbert", "Hannover" });
         var finalBlock = TestDataGenerator.Start(toGenerate, lineGeneratorFactory, streamWriter);
         await finalBlock.Completion;
 
