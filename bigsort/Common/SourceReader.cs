@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using BigSort.V2;
@@ -14,10 +15,10 @@ namespace BigSort.Common
   internal class SourceReader
   {
     /// <summary>
-    /// Starts reading synchronously.
+    /// Starts the reading.
     /// <paramref name="blockSize">Number of lines in one block</paramref>
     /// </summary>
-    public void Start(string inFilePath, int blockSize, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
+    public async Task StartAsync(string inFilePath, int blockSize, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
     {
       var logger = pipelineContext.LoggerFactory.CreateLogger(nameof(SourceReader));
       logger.LogInformation("Started reading the source file.");
@@ -36,7 +37,11 @@ namespace BigSort.Common
           {
             var splitBuffer = new StringBuffer(memBuffer, splitBufferSize);
             var evt = new BufferReadEvent(splitBuffer, sr.EndOfStream);
-            target.Post(evt);
+            var sendResult = await target.SendAsync(evt);
+            if(!sendResult)
+            {
+              throw new InvalidOperationException("Failed to push a data block into the pipeline.");
+            }
             pipelineContext.Stats.AddBlockReads();
             logger.LogDebug("Pushed string buffer. size: {size}, final: {isFinal}", splitBufferSize, sr.EndOfStream);
 
@@ -52,7 +57,11 @@ namespace BigSort.Common
         {
           var splitBuffer = new StringBuffer(memBuffer, splitBufferPos);
           var evt = new BufferReadEvent(splitBuffer, true);
-          target.Post(evt);
+          var sendResult = await target.SendAsync(evt);
+          if(!sendResult)
+          {
+            throw new InvalidOperationException("Failed to push a data block into the pipeline.");
+          }
           pipelineContext.Stats.AddBlockReads();
           logger.LogDebug("Pushed string buffer. size: {size}, final: {isFinal}", splitBufferPos, true);
         }
@@ -63,17 +72,6 @@ namespace BigSort.Common
         Markers.WriteFlag("Reading completed.");
         logger.LogInformation("Reading completed.");
       }
-    }
-
-    /// <summary>
-    /// Starts reading process asynchronously.
-    /// </summary>
-    public Task StartAsync(string inFilePath, int blockSize, IPipelineContext pipelineContext, ITargetBlock<BufferReadEvent> target)
-    {
-      return Task.Run(() =>
-      {
-        Start(inFilePath, blockSize, pipelineContext, target);
-      });
     }
   }
 }

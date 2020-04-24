@@ -34,25 +34,33 @@ namespace BigSort.Commands
         .AddConsole()
         .SetMinimumLevel(LogLevel.Information);
       });
+      var logger = loggerFactory.CreateLogger(nameof(CommandMergeSort));
 
-      var fsContextOptions = new FileContextOptions
+      try
       {
-        InFilePath = this.InFilePath,
-        OutFilePath = this.OutFilePath,
-        TempDirectoryPath = this.TempDirectoryPath,
-        UseOutFile = true
-      };
-
-      using(var fileContext = new FileContext(fileSystem, loggerFactory, fsContextOptions))
-      {
-        var options = new MergeSortOptions
+        var fsContextOptions = new FileContextOptions
         {
-          MaxConcurrentJobs = Environment.ProcessorCount - 1 // Let user observe the perfmon
+          InFilePath = this.InFilePath,
+          OutFilePath = this.OutFilePath,
+          TempDirectoryPath = this.TempDirectoryPath,
+          UseOutFile = true
         };
 
-        IMergeSortTask mergeSortTask = new MergeSortTaskV2();
-        Console.WriteLine($"Launching merge sort V2...");
-        await mergeSortTask.ExecuteAsync(fileContext, loggerFactory, options);
+        using(var fileContext = new FileContext(fileSystem, loggerFactory, fsContextOptions))
+        {
+          var options = new MergeSortOptions
+          {
+            MaxConcurrentJobs = Environment.ProcessorCount - 1 // Let user observe the perfmon
+          };
+
+          IMergeSortTask mergeSortTask = new MergeSortTaskV2();
+          Console.WriteLine($"Launching merge sort V2...");
+          await mergeSortTask.ExecuteAsync(fileContext, loggerFactory, options);
+        }
+      }
+      catch(Exception e)
+      {
+        logger.LogCritical(e, "The merge sort has failed");
       }
     }
   }

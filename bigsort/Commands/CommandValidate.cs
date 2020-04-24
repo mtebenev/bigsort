@@ -72,8 +72,8 @@ Warning! This is slow command, for development purposes only.
           // Push records in db
           var context = new PipelineContext(loggerFactory, fileContext);
           var dbPusherBlock = DbPusherBlock.Create(loggerFactory, connection, fileContext.GetInFileSize());
-          reader.Start(fileContext.InFilePath, pushBlockSize, context, dbPusherBlock);
-          await dbPusherBlock.Completion;
+          var readerTask = reader.StartAsync(fileContext.InFilePath, pushBlockSize, context, dbPusherBlock);
+          await Task.WhenAll(dbPusherBlock.Completion, readerTask);
 
           // Compare database with out file
           await this.CompareAsync(connection, context, this.OutFilePath);
@@ -138,7 +138,7 @@ Warning! This is slow command, for development purposes only.
       var sourceReader = new SourceReader();
       var readerTask = sourceReader.StartAsync(checkFilePath, pageSize, pipelineContext, joinBlock.Target2);
 
-      await comparisonBlock.Completion;
+      await Task.WhenAll(comparisonBlock.Completion, readerTask);
       await Task.WhenAll(readerTask, dbLoaderTask);
     }
   }
