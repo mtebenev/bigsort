@@ -37,6 +37,9 @@ namespace BigSort.V2.Blocks
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
         {
+          // BoundCapacity is essential to block the reader until we process current messages.
+          // Otherwise the memory usage grows because reader continues producing data.
+          BoundedCapacity = 2,
           MaxDegreeOfParallelism = 1
         });
 
