@@ -29,7 +29,13 @@ namespace BigSort.V2.Blocks
     {
       var block = new ChunkFlushBlock(pipelineContext);
       var result = new TransformBlock<SortBucket, ChunkFlushEvent>(
-        (bucket) => block.Execute(bucket, pipelineContext));
+        (bucket) => block.Execute(bucket, pipelineContext),
+        new ExecutionDataflowBlockOptions 
+        {
+          // One in, one out for the flushing
+          MaxDegreeOfParallelism = 1,
+          BoundedCapacity = 1
+        });
 
       return result;
     }

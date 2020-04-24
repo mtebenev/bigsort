@@ -22,7 +22,14 @@ namespace BigSort.V2
       var reader = new SourceReader();
       var (startBlock, finishBlock) = PipelineBuilder.Build(options, context);
 
-      var readerTask = reader.StartAsync(fileContext.InFilePath, splitBufferSize, context, startBlock);
+      var readerTask = reader.StartAsync(
+        loggerFactory,
+        fileContext.InFilePath,
+        splitBufferSize,
+        context.Stats,
+        startBlock
+      );
+
       await Task.WhenAll(readerTask, startBlock.Completion, finishBlock.Completion);
       context.Stats.PrintStats();
     }

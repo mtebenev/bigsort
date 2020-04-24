@@ -26,8 +26,8 @@ namespace BigSort.V2.Blocks
         (bucket) => block.Execute(bucket),
         new ExecutionDataflowBlockOptions
         {
+          BoundedCapacity = options.MaxConcurrentJobs,
           MaxDegreeOfParallelism = options.MaxConcurrentJobs,
-          EnsureOrdered = true
         });
 
       return result;
