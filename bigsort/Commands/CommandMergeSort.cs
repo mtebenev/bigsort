@@ -32,7 +32,7 @@ namespace BigSort.Commands
       {
         builder
         .AddConsole()
-        .SetMinimumLevel(LogLevel.Information);
+        .SetMinimumLevel(LogLevel.Debug);
       });
       var logger = loggerFactory.CreateLogger(nameof(CommandMergeSort));
 

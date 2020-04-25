@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using BigSort.Common;
 using MoreLinq;
 
 namespace BigSort.V2
@@ -31,7 +32,7 @@ namespace BigSort.V2
     /// <summary>
     /// Pairwise merging. Takes sources files by pairs and merges to the output file.
     /// </summary>
-    public static Task<string> MergePairwiseAsync(IList<string> filePaths)
+    public static Task<string> MergePairwiseAsync(IList<string> filePaths, IFileContext fileContext)
     {
       var levelPaths = filePaths.ToList();
       while(levelPaths.Count > 1)
@@ -52,7 +53,7 @@ namespace BigSort.V2
 
         thisLevelPaths.AsParallel().ForAll(async (paths) =>
         {
-          var nextPath = await MergeFilesAsync(paths.p1, paths.p2);
+          var nextPath = await MergeFilesAsync(paths.p1, paths.p2, fileContext);
           nextLevel.Add(nextPath);
         });
 
@@ -62,19 +63,15 @@ namespace BigSort.V2
       return Task.FromResult(levelPaths[0]);
     }
 
-    private static Task<string> MergeFilesAsync(string path1, string path2)
+    private static Task<string> MergeFilesAsync(string path1, string path2, IFileContext fileContext)
     {
       var enu1 = File.ReadLines(path1)
         .Select(s => new SortRecord(s));
       var enu2 = File.ReadLines(path2)
         .Select(s => new SortRecord(s));
 
-      var outFileName = $@"c:\_sorting\chunks\{new Random().Next()}.txt";
+      var outFileName = fileContext.AddTempFile();
 
-      if(File.Exists(outFileName))
-      {
-        throw new Exception("Chunk file already exists.");
-      }
       var comparer = new SortRecordComparer();
       var mergeEnumeragele = enu1.SortedMerge(OrderByDirection.Ascending, enu2)
         .Select(sr => sr.Value);

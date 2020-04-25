@@ -30,7 +30,6 @@ namespace BigSort.V2.Blocks
 
     /// <summary>
     /// The factory.
-    /// TODOA: comment options
     /// </summary>
     public static TransformManyBlock<BufferReadEvent, SortBucket> Create(IPipelineContext pipelineContext, int bufferSize)
     {
@@ -39,8 +38,9 @@ namespace BigSort.V2.Blocks
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
         {
-          // BoundCapacity is essential to block the reader until we process current messages.
-          // Otherwise the memory usage grows because reader continues producing data.
+          // BoundCapacity is essential to block the reader until we process current messages,
+          // otherwise the memory usage grows because the reader continues producing data.
+          // Setting the bound capacity we are effectively blocking the reading to let us 'swallow' the current data.
           BoundedCapacity = 2,
           MaxDegreeOfParallelism = 1
         });
@@ -55,7 +55,7 @@ namespace BigSort.V2.Blocks
     {
       this._logger.LogInformation("Start string buffer processing.");
       this.PushNewRecords(evt.Buffer);
-      var flushedRecords = this.FlushBuckets(evt.IsReadCompleted);
+      var flushedRecords = this.FlushChunks(evt.IsReadCompleted);
 
       this._logger.LogInformation("Finished string buffer processing.");
       return flushedRecords;
@@ -86,9 +86,8 @@ namespace BigSort.V2.Blocks
 
     /// <summary>
     /// Flushes full buckets if any.
-    /// TODOA: confusing name
     /// </summary>
-    private IEnumerable<SortBucket> FlushBuckets(bool isReadingCompleted)
+    private IEnumerable<SortBucket> FlushChunks(bool isReadingCompleted)
     {
       // TODO: this is not precise enough. The bucket threshold depends on the buckets count.
       // So the idea is that we should avoid memory paging. In the same time we should keep buckets big enough to reduce the merge sources.
