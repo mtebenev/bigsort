@@ -5,7 +5,7 @@
   /// </summary>
   internal class BucketMergeEvent
   {
-    public BucketMergeEvent(string filePath, long infix)
+    public BucketMergeEvent(string filePath, uint infix)
     {
       this.FilePath = filePath;
       this.Infix = infix;
@@ -19,6 +19,6 @@
     /// <summary>
     /// The bucket infix.
     /// </summary>
-    public long Infix { get; }
+    public uint Infix { get; }
   }
 }

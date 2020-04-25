@@ -20,7 +20,7 @@ namespace BigSort.V2.Blocks
     public static IPropagatorBlock<ChunkFlushEvent, ChunkFlushEvent[]> Create(IPipelineContext pipelineContext)
     {
       var logger = pipelineContext.LoggerFactory.CreateLogger(nameof(BucketMergeCoordinatorBlock));
-      var groupedEvents = new Dictionary<long, List<ChunkFlushEvent>>();
+      var groupedEvents = new Dictionary<uint, List<ChunkFlushEvent>>();
       var outgoingBlock = new BufferBlock<ChunkFlushEvent[]>();
       var incomingBlock = new ActionBlock<ChunkFlushEvent>(async evt =>
       {

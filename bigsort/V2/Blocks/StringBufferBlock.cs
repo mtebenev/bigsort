@@ -12,7 +12,7 @@ namespace BigSort.V2.Blocks
   /// </summary>
   internal class StringBufferBlock
   {
-    private readonly Dictionary<long, List<SortRecord>> _buckets;
+    private readonly Dictionary<uint, List<SortRecord>> _buckets;
     private readonly IPipelineContext _pipelineContext;
     private readonly ILogger _logger;
 
@@ -21,7 +21,7 @@ namespace BigSort.V2.Blocks
     /// </summary>
     private StringBufferBlock(IPipelineContext pipelineContext)
     {
-      this._buckets = new Dictionary<long, List<SortRecord>>();
+      this._buckets = new Dictionary<uint, List<SortRecord>>();
       this._pipelineContext = pipelineContext;
       this._logger = pipelineContext.LoggerFactory.CreateLogger(nameof(Blocks.StringBufferBlock));
     }

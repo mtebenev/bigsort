@@ -7,7 +7,7 @@ namespace BigSort.V2
   /// </summary>
   internal class SortBucket
   {
-    public SortBucket(long infix, List<SortRecord> records)
+    public SortBucket(uint infix, List<SortRecord> records)
     {
       this.Infix = infix;
       this.Records = records;
@@ -19,7 +19,7 @@ namespace BigSort.V2
     /// We treat first symbols of the word (the primary key) as the infix (i.e. 'Bana').
     /// This way we can quickly group the records by buckets.
     /// </summary>
-    public long Infix { get; }
+    public uint Infix { get; }
 
     /// <summary>
     /// The bucket records.

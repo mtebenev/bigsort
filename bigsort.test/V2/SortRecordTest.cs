@@ -27,13 +27,8 @@ namespace BigSort.Test.V2
     [Fact]
     public void Should_Work_With_Short_Infixes()
     {
-      var r1 = new SortRecord("123. a");
-      var r2 = new SortRecord("123. aa");
-      var r3 = new SortRecord("123. aaa");
-
-      Assert.Equal(InfixUtils.StringToInfix("a\0\0\0"), r1.Infix);
-      Assert.Equal(InfixUtils.StringToInfix("aa\0\0"), r2.Infix);
-      Assert.Equal(InfixUtils.StringToInfix("aaa\0"), r3.Infix);
+      var r = new SortRecord("123. a");
+      Assert.Equal(InfixUtils.StringToInfix("a\0"), r.Infix);
     }
   }
 }

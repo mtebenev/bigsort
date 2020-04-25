@@ -13,11 +13,11 @@ namespace BigSort.V2
   /// </summary>
   internal class PipelineContext : IPipelineContext
   {
-    private readonly TaskCompletionSource<long[]> _tcsInfixesReady;
-    private readonly HashSet<long> _infixes; // All discovered infixes.
+    private readonly TaskCompletionSource<uint[]> _tcsInfixesReady;
+    private readonly HashSet<uint> _infixes; // All discovered infixes.
     private readonly ILogger _logger;
-    private ConcurrentDictionary<long, int> _chunkFlushesMap;
-    private ConcurrentDictionary<long, int> _chunkStartsMap;
+    private ConcurrentDictionary<uint, int> _chunkFlushesMap;
+    private ConcurrentDictionary<uint, int> _chunkStartsMap;
 
     /// <summary>
     /// Ctor.
@@ -28,10 +28,10 @@ namespace BigSort.V2
       this.FileContext = fileContext;
       this.Stats = new Stats();
       this._logger = loggerFactory.CreateLogger(nameof(PipelineContext));
-      this._tcsInfixesReady = new TaskCompletionSource<long[]>();
-      this._infixes = new HashSet<long>();
-      this._chunkFlushesMap = new ConcurrentDictionary<long, int>();
-      this._chunkStartsMap = new ConcurrentDictionary<long, int>();
+      this._tcsInfixesReady = new TaskCompletionSource<uint[]>();
+      this._infixes = new HashSet<uint>();
+      this._chunkFlushesMap = new ConcurrentDictionary<uint, int>();
+      this._chunkStartsMap = new ConcurrentDictionary<uint, int>();
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ namespace BigSort.V2
     /// <summary>
     /// IPipelineContext.
     /// </summary>
-    public Task<long[]> GetAllInfixesAsync()
+    public Task<uint[]> GetAllInfixesAsync()
     {
       return this._tcsInfixesReady.Task;
     }
@@ -60,7 +60,7 @@ namespace BigSort.V2
     /// <summary>
     /// IPipelineContext.
     /// </summary>
-    public void AddInfix(long infix)
+    public void AddInfix(uint infix)
     {
       this._infixes.Add(infix);
     }
@@ -74,17 +74,17 @@ namespace BigSort.V2
       this._tcsInfixesReady.SetResult(this._infixes.ToArray());
     }
 
-    public void OnChunkFlush(long infix)
+    public void OnChunkFlush(uint infix)
     {
       this._chunkFlushesMap.AddOrUpdate(infix, 1, (k, v) => v + 1);
     }
 
-    public void OnChunkStart(long infix)
+    public void OnChunkStart(uint infix)
     {
       this._chunkStartsMap.AddOrUpdate(infix, 1, (k, v) => v + 1);
     }
 
-    public bool IsBucketFullyFlushed(long infix)
+    public bool IsBucketFullyFlushed(uint infix)
     {
       if(!this._chunkStartsMap.ContainsKey(infix) || !this._chunkFlushesMap.ContainsKey(infix))
       {
