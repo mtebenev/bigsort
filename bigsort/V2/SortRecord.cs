@@ -17,7 +17,7 @@ namespace BigSort.V2
     {
       this.DotPos = s.IndexOf('.');
       var span = s.AsSpan(this.DotPos + 2, Math.Min(2, s.Length - this.DotPos - 2)); // Dot + space
-      if(span.Length >= 4)
+      if(span.Length >= 2)
       {
         this.Infix = MemoryMarshal.Cast<char, uint>(span)[0];
       }

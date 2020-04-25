@@ -55,7 +55,9 @@ namespace BigSort.V2.Blocks
         if(remaining.Count > 0)
         {
           // This means that something goes wrong in the pipeline.
-          throw new InvalidOperationException("Some of the chunks still not flushed.");
+          var exception = new InvalidOperationException("Some of the chunks still not flushed.");
+          ((ITargetBlock<ChunkFlushEvent[]>)outgoingBlock).Fault(exception);
+          throw exception;
         }
 
         if(t.Status == TaskStatus.RanToCompletion)

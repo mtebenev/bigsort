@@ -87,7 +87,7 @@ Warning! This command is very slow, use for development purposes only.
       }
       catch(Exception e)
       {
-        logger.LogCritical(e, "The validation faulted");
+        logger.LogCritical(e, "The validation failed.");
       }
       finally
       {

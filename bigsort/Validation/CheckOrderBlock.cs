@@ -38,7 +38,7 @@ namespace BigSort.Validation
 
           if(comparer.Compare(r1, r2) > 0)
           {
-            throw new InvalidOperationException($"Invalid data at line: {progressCounter.CurrentLine}");
+            throw new InvalidOperationException($"Invalid data at line: {progressCounter.CurrentLine}\n{r2.Value}");
           }
 
           progressCounter.OnLineProcessed(evt.Buffer.Buffer[i]);

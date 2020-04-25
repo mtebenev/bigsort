@@ -52,7 +52,7 @@ namespace BigSort.V2.Blocks
           .Select(e => e.FilePath)
           .ToList();
 
-        BucketMerger.MergeKWay(filePaths, chunkFilePath);
+        BucketMerger.MergeKWay(this._pipelineContext.FileContext.FileSystem, filePaths, chunkFilePath);
         this._pipelineContext.Stats.AddBucketMerges();
 
         result = new BucketMergeEvent(chunkFilePath, events.First().Infix);

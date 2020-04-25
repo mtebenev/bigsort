@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using BigSort.V2;
 using Xunit;
 
@@ -8,14 +7,14 @@ namespace BigSort.Test.V2
   public class InfixComparerTest
   {
     [Fact]
-    public void Should_Should_Infixes()
+    public void Should_Compare_Infixes()
     {
       var infixStrings = new[]
       {
-        "dddd",
-        "aaaa",
-        "cccc",
-        "bbbb"
+        "dd",
+        "aa",
+        "cc",
+        "bb"
       };
       var infixes = infixStrings.Select(s => InfixUtils.StringToInfix(s));
 
@@ -27,10 +26,10 @@ namespace BigSort.Test.V2
 
       var expectedInfixStrings = new[]
       {
-        "aaaa",
-        "bbbb",
-        "cccc",
-        "dddd",
+        "aa",
+        "bb",
+        "cc",
+        "dd",
       };
 
       Assert.Equal(expectedInfixStrings, sortedInfixStrings);
@@ -39,7 +38,7 @@ namespace BigSort.Test.V2
     [Fact]
     public void Testing_Utils_Converters()
     {
-      var s = "abcd";
+      var s = "ab";
       var infix = InfixUtils.StringToInfix(s);
       var s2 = InfixUtils.InfixToString(infix);
 

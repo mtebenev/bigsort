@@ -48,6 +48,11 @@ namespace BigSort.Common
     /// <summary>
     /// IFileContext.
     /// </summary>
+    public IFileSystem FileSystem => this._fileSystem;
+
+    /// <summary>
+    /// IFileContext.
+    /// </summary>
     public string InFilePath { get; }
 
     /// <summary>

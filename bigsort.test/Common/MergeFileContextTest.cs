@@ -20,6 +20,7 @@ namespace BigSort.Test.Common
       {
         InFilePath = "input-file-path",
         OutFilePath = "out-file-path",
+        UseOutFile = true
       };
 
       var context = new FileContext(mockFs, mockLf, options);

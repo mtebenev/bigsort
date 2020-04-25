@@ -13,7 +13,7 @@ namespace BigSort.V2
     /// <summary>
     /// Builder method.
     /// </summary>
-    public static (ITargetBlock<BufferReadEvent>, ITargetBlock<BucketMergeEvent[]>) Build(MergeSortOptions options, PipelineContext pipelineContext, int bufferSize)
+    public static (ITargetBlock<BufferReadEvent>, ITargetBlock<BucketMergeEvent[]>) Build(MergeSortOptions options, IPipelineContext pipelineContext, int bufferSize)
     {
       // Buffer data in buckets
       var stringBufferBlock = StringBufferBlock.Create(pipelineContext, bufferSize);

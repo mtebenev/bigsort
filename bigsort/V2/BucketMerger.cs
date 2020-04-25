@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using BigSort.Common;
@@ -16,17 +16,20 @@ namespace BigSort.V2
     /// <summary>
     /// k-way file merge.
     /// </summary>
-    public static void MergeKWay(IList<string> filePaths, string outFilePath)
+    public static void MergeKWay(IFileSystem fileSystem, IList<string> filePaths, string outFilePath)
     {
       var sources = filePaths
-         .Select(p => File
-         .ReadLines(p))
+         .Select(p => fileSystem.File
+         .ReadLines(p).Select(l => new SortRecord(l)))
          .ToList();
 
       var e1 = sources[0];
       var erest = sources.Skip(1).ToArray();
-      var target = e1.SortedMerge(OrderByDirection.Ascending, erest);
-      File.WriteAllLines(outFilePath, target);
+      var comparer = new SortRecordComparer();
+      var target = e1
+        .SortedMerge(OrderByDirection.Ascending, comparer, erest)
+        .Select(sr => sr.Value);
+      fileSystem.File.WriteAllLines(outFilePath, target);
     }
 
     /// <summary>
@@ -73,7 +76,7 @@ namespace BigSort.V2
       var outFileName = fileContext.AddTempFile();
 
       var comparer = new SortRecordComparer();
-      var mergeEnumeragele = enu1.SortedMerge(OrderByDirection.Ascending, enu2)
+      var mergeEnumeragele = enu1.SortedMerge(OrderByDirection.Ascending, comparer, enu2)
         .Select(sr => sr.Value);
       File.WriteAllLines(outFileName, mergeEnumeragele);
 

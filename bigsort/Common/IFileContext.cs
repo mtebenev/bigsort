@@ -1,10 +1,17 @@
-﻿namespace BigSort.Common
+﻿using System.IO.Abstractions;
+
+namespace BigSort.Common
 {
   /// <summary>
   /// Client interface for the file context.
   /// </summary>
   interface IFileContext
   {
+    /// <summary>
+    /// The file system interface.
+    /// </summary>
+    public IFileSystem FileSystem { get; }
+
     /// <summary>
     /// The input file path.
     /// </summary>
