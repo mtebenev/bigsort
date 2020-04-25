@@ -15,12 +15,14 @@ namespace BigSort.V2.Blocks
     private readonly Dictionary<uint, List<SortRecord>> _buckets;
     private readonly IPipelineContext _pipelineContext;
     private readonly ILogger _logger;
+    private readonly int _bufferSize;
 
     /// <summary>
     /// Ctor.
     /// </summary>
-    private StringBufferBlock(IPipelineContext pipelineContext)
+    private StringBufferBlock(IPipelineContext pipelineContext, int bufferSize)
     {
+      this._bufferSize = bufferSize;
       this._buckets = new Dictionary<uint, List<SortRecord>>();
       this._pipelineContext = pipelineContext;
       this._logger = pipelineContext.LoggerFactory.CreateLogger(nameof(Blocks.StringBufferBlock));
@@ -30,9 +32,9 @@ namespace BigSort.V2.Blocks
     /// The factory.
     /// TODOA: comment options
     /// </summary>
-    public static TransformManyBlock<BufferReadEvent, SortBucket> Create(IPipelineContext pipelineContext)
+    public static TransformManyBlock<BufferReadEvent, SortBucket> Create(IPipelineContext pipelineContext, int bufferSize)
     {
-      var block = new StringBufferBlock(pipelineContext);
+      var block = new StringBufferBlock(pipelineContext, bufferSize);
       var result = new TransformManyBlock<BufferReadEvent, SortBucket>(
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
@@ -88,7 +90,9 @@ namespace BigSort.V2.Blocks
     /// </summary>
     private IEnumerable<SortBucket> FlushBuckets(bool isReadingCompleted)
     {
-      var maxBucketRecords = 10000;
+      // TODO: this is not precise enough. The bucket threshold depends on the buckets count.
+      // So the idea is that we should avoid memory paging. In the same time we should keep buckets big enough to reduce the merge sources.
+      var maxBucketRecords = this._bufferSize / 10;
       var stringSource = isReadingCompleted
         ? this._buckets
         : this._buckets.Where(kvp => kvp.Value.Count > maxBucketRecords);

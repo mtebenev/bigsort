@@ -43,7 +43,8 @@ namespace BigSort.Commands
     [Argument(0, "Output file path")]
     public string OutFilePath { get; set; }
 
-    [Option(LongName = "limit", Description = "Limit generated file size. Exmple: 2K, 2M, 2G")]
+    [Option(LongName = "limit", Description = @"Limit generated file size (approximately). Exmple: 2kb, 2mb, 2gb.
+Important: the result file will not match the limit exactly (it may vary depending on the content).")]
     public string Limit { get; set; }
 
     /// <summary>
