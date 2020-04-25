@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BigSort.Generation
 {
   /// <summary>
-  /// Generates random strings.
+  /// Generates lines of random 1-3 words (each of 1-8 symbols).
   /// Note: NOT thread-safe.
   /// </summary>
   internal class LineGeneratorRandom : ILineGenerator
   {
     private readonly Random _random;
-    private readonly StringBuilder _stringBuilder;
     private const string _chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private readonly int _alphabeSize = _chars.Length;
+    private readonly int _maxStringLength;
 
     /// <summary>
     /// Ctor.
@@ -21,39 +19,49 @@ namespace BigSort.Generation
     public LineGeneratorRandom()
     {
       this._random = new Random();
-      this._stringBuilder = new StringBuilder();
+      this._maxStringLength =  24 + 2 + 20 + 2 + 1; // Max string length is the (3 * 8symbol words) + 2 spaces between words + long for number + dot + space + line end
     }
 
-    /// <summary>
-    /// ILineGenerator.
-    /// </summary>
-    public IEnumerable<string> GenerateLines()
+    public int FillBuffer(Span<char> memBuffer, long toFill)
     {
-      while(true)
+      var workSpan = memBuffer;
+      while(workSpan.Length > this._maxStringLength)
       {
-        this._stringBuilder.Clear();
-        this._stringBuilder.Append(this._random.Next());
-        this._stringBuilder.Append(". ");
-        this._stringBuilder.Append(this.GenerateRandomString(10));
+        // The number
+        var rn = this._random.Next();
+        rn.TryFormat(workSpan, out var written);
+        workSpan = workSpan.Slice(written);
 
-        yield return this._stringBuilder.ToString();
-      }
-    }
+        // Dot
+        workSpan[0] = '.';
+        workSpan[1] = ' ';
+        workSpan = workSpan.Slice(2);
 
-    /// <summary>
-    /// Generates array of strings.
-    /// </summary>
-    private string GenerateRandomString(int size)
-    {
-      var result = string.Create(size, (s: size, alps: this._alphabeSize, chars: _chars, r: this._random), (buffer, state) =>
-      {
-        for(int i = 0; i < state.s ; i++)
+        // The string
+        var wordCount = this._random.Next(1, 4); // Note: the upper bound is exclusive
+        for(int i = 0; i < wordCount; i++)
         {
-          buffer[i] = state.chars[state.r.Next(state.alps)];
-        }
-      });
+          if(i > 0)
+          {
+            workSpan[0] = ' ';
+            workSpan = workSpan.Slice(1);
+          }
 
-      return result;
+          var symbolCount = this._random.Next(1, 9); // Note: the upper bound is exclusive
+          for(int j = 0; j < symbolCount; j++)
+          {
+            rn = this._random.Next(this._alphabeSize);
+            workSpan[j] = LineGeneratorRandom._chars[rn];
+          }
+          workSpan = workSpan.Slice(symbolCount);
+        }
+
+        // the line ending
+        workSpan[0] = '\n';
+        workSpan = workSpan.Slice(1);
+      }
+
+      return memBuffer.Length - workSpan.Length;
     }
   }
 }

@@ -16,8 +16,28 @@ namespace BigSort.V2
     public SortRecord(string s)
     {
       this.DotPos = s.IndexOf('.');
-      var span = s.AsSpan(this.DotPos + 2, 4); // Dot + space
-      this.Infix = MemoryMarshal.Cast<char, long>(span)[0];
+      var span = s.AsSpan(this.DotPos + 2, Math.Min(4, s.Length - this.DotPos - 2)); // Dot + space
+      if(span.Length >= 4)
+      {
+        this.Infix = MemoryMarshal.Cast<char, long>(span)[0];
+      }
+      else
+      {
+        this.Infix = 0;       
+        this.Infix |= span[0];
+
+        if(span.Length > 1)
+        {
+          this.Infix <<= 16;
+          this.Infix |= span[1];
+        }
+
+        if(span.Length > 2)
+        {
+          this.Infix <<= 16;
+          this.Infix |= span[2];
+        }
+      }
       this.Value = s;
     }
 

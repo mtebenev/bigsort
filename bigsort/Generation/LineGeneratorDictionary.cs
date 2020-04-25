@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 
 namespace BigSort.Generation
 {
@@ -43,7 +42,7 @@ namespace BigSort.Generation
         workSpan = workSpan.Slice(2);
 
         // The string
-        rn = this._random.Next(this._allWords.Length - 1);
+        rn = this._random.Next(this._allWords.Length);
         this._allWords[rn].AsSpan().CopyTo(workSpan);
         workSpan = workSpan.Slice(this._allWords[rn].Length);
 
