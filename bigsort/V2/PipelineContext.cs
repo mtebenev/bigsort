@@ -92,7 +92,8 @@ namespace BigSort.V2
         throw new InvalidOperationException("Number or flushed buckets is different from number of the found buckets.");
       }
 
-      var result = this._chunkStartsMap.ContainsKey(infix) == this._chunkFlushesMap.ContainsKey(infix);
+      // Note: checking the infix reading status without awaiting. We don't want blocking callers on this call.
+      var result = this._tcsInfixesReady.Task.IsCompletedSuccessfully && this._chunkStartsMap[infix] == this._chunkFlushesMap[infix];
       return result;
     }
   }

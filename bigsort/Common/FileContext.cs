@@ -115,7 +115,7 @@ namespace BigSort.Common
       {
         this.DeleteTempFile(p);
       }
-      if(this._isRemoveTempDirectory)
+      if(this._isRemoveTempDirectory && this._tempPaths.Count > 0)
       {
         this.RemoveTempDirectory();
       }

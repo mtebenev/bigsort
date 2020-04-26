@@ -38,7 +38,7 @@ namespace BigSort.V2.Blocks
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
         {
-          // BoundCapacity is essential to block the reader until we process current messages,
+          // BoundedCapacity is essential to block the reader until we process current messages,
           // otherwise the memory usage grows because the reader continues producing data.
           // Setting the bound capacity we are effectively blocking the reading to let us 'swallow' the current data.
           BoundedCapacity = 2,
