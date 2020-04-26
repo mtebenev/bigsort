@@ -30,7 +30,8 @@ namespace BigSort.Common
     /// <summary>
     /// Adds unique temp file to the context.
     /// Returns the temp file path. The temp file will be removed upon disposing the context.
+    /// The prefix string is nullable.
     /// </summary>
-    public string AddTempFile();
+    public string AddTempFile(string prefix);
   }
 }

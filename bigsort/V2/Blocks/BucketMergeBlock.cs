@@ -47,15 +47,15 @@ namespace BigSort.V2.Blocks
 
       using(Markers.EnterSpan("Bucket merge"))
       {
-        var chunkFilePath = this._pipelineContext.FileContext.AddTempFile();
+        var bucketFilePath = this._pipelineContext.FileContext.AddTempFile($"bucket-{InfixUtils.InfixToString(events.First().Infix)}");
         var filePaths = events
           .Select(e => e.FilePath)
           .ToList();
 
-        BucketMerger.MergeKWay(this._pipelineContext.FileContext.FileSystem, filePaths, chunkFilePath);
+        BucketMerger.MergeKWay(this._pipelineContext.FileContext.FileSystem, filePaths, bucketFilePath);
         this._pipelineContext.Stats.AddBucketMerges();
 
-        result = new BucketMergeEvent(chunkFilePath, events.First().Infix);
+        result = new BucketMergeEvent(bucketFilePath, events.First().Infix);
       }
       return result;
     }

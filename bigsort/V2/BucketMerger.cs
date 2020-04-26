@@ -73,7 +73,7 @@ namespace BigSort.V2
       var enu2 = File.ReadLines(path2)
         .Select(s => new SortRecord(s));
 
-      var outFileName = fileContext.AddTempFile();
+      var outFileName = fileContext.AddTempFile(null);
 
       var comparer = new SortRecordComparer();
       var mergeEnumeragele = enu1.SortedMerge(OrderByDirection.Ascending, comparer, enu2)

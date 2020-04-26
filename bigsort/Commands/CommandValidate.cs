@@ -65,7 +65,7 @@ Warning! This command is very slow, use for development purposes only.
           logger.LogInformation($"Started validating {this.OutFilePath} against {fileContext.InFilePath}");
 
           const int pushBlockSize = 10000; // Will push lines in db by blocks of the size.
-          var dbPath = fileContext.AddTempFile();
+          var dbPath = fileContext.AddTempFile(null);
           connection = this.CreateDatabase(dbPath);
           var reader = new SourceReader();
 

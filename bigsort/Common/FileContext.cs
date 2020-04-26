@@ -14,6 +14,7 @@ namespace BigSort.Common
     private readonly ConcurrentBag<string> _tempPaths;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger _logger;
+    private readonly bool _isRemoveTempDirectory;
 
     /// <summary>
     /// Ctor.
@@ -23,8 +24,21 @@ namespace BigSort.Common
       this._fileSystem = fileSystem;
       this._logger = loggerFactory.CreateLogger(nameof(FileContext));
       this._tempPaths = new ConcurrentBag<string>();
-      this._tempDirectoryPath = options.TempDirectoryPath;
       this.InFilePath = options.InFilePath;
+
+      if(string.IsNullOrEmpty(options.TempDirectoryPath))
+      {
+        var tempDirectory = this._fileSystem.Path.GetTempPath();
+        this._tempDirectoryPath = this._fileSystem.Path.Combine(
+          tempDirectory,
+          this._fileSystem.Path.GetRandomFileName());
+        this._isRemoveTempDirectory = true;
+      }
+      else
+      {
+        this._tempDirectoryPath = options.TempDirectoryPath;
+        this._isRemoveTempDirectory = false; // Do not remove the temporary directory if set explicitly.
+      }
 
       if(options.UseOutFile)
       {
@@ -71,11 +85,15 @@ namespace BigSort.Common
     /// <summary>
     /// IFileContext.
     /// </summary>
-    public string AddTempFile()
+    public string AddTempFile(string prefix)
     {
-      var newTempPath = string.IsNullOrEmpty(this._tempDirectoryPath)
-        ? this._fileSystem.Path.GetTempFileName()
-        : this._fileSystem.Path.Combine(this._tempDirectoryPath, this._fileSystem.Path.GetRandomFileName());
+      var tempFileName = string.IsNullOrEmpty(prefix)
+        ? this._fileSystem.Path.GetRandomFileName()
+        : $"{prefix}-{this._fileSystem.Path.GetRandomFileName()}";
+      var newTempPath = this._fileSystem.Path.Combine(
+        this._tempDirectoryPath,
+        tempFileName
+      );
 
       this._tempPaths.Add(newTempPath);
 
@@ -97,6 +115,10 @@ namespace BigSort.Common
       {
         this.DeleteTempFile(p);
       }
+      if(this._isRemoveTempDirectory)
+      {
+        this.RemoveTempDirectory();
+      }
     }
 
     private void DeleteTempFile(string path)
@@ -108,6 +130,18 @@ namespace BigSort.Common
       catch(Exception e)
       {
         this._logger.LogError(e, $"Could not delete the temporary file: {path}");
+      }
+    }
+
+    private void RemoveTempDirectory()
+    {
+      try
+      {
+        this._fileSystem.Directory.Delete(this._tempDirectoryPath);
+      }
+      catch(Exception e)
+      {
+        this._logger.LogError(e, $"Could not delete the temporary directory: {this._tempDirectoryPath}");
       }
     }
   }

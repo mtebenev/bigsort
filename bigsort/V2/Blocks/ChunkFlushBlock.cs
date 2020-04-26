@@ -44,7 +44,7 @@ namespace BigSort.V2.Blocks
     {
       this._logger.LogDebug("Flushing chunk, infix: {infix}", InfixUtils.InfixToString(bucket.Infix));
 
-      var chunkFilePath = pipelineContext.FileContext.AddTempFile();
+      var chunkFilePath = pipelineContext.FileContext.AddTempFile($"chunk-{InfixUtils.InfixToString(bucket.Infix)}");
 
       using(Markers.EnterSpan("Bucket flush"))
       using(MiniProfiler.Current.CustomTiming("Save chunk file", ""))

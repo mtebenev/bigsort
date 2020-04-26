@@ -93,22 +93,27 @@ namespace BigSort.Test.Common
       var mockFs = Substitute.For<IFileSystem>();
       var mockLf = Substitute.For<ILoggerFactory>();
       mockFs.File.Exists("input-file-path").Returns(true);
-      mockFs.Path.GetTempFileName().Returns(
+      mockFs.Path.GetTempPath().Returns("base-temp-path");
+      mockFs.Path.GetRandomFileName().Returns(
+        "random-temp-dir",
         "temp-file-1",
         "temp-file-2"
       );
+      mockFs.Path.Combine("base-temp-path", "random-temp-dir").Returns("composed-temp-dir");
+      mockFs.Path.Combine("composed-temp-dir", "temp-file-1").Returns("composed-temp-file-1");
+      mockFs.Path.Combine("composed-temp-dir", "temp-file-2").Returns("composed-temp-file-2");
 
       var options = new FileContextOptions
       {
         InFilePath = "input-file-path",
       };
       var context = new FileContext(mockFs, mockLf, options);
-      var tempFile1 = context.AddTempFile();
-      var tempFile2 = context.AddTempFile();
+      var tempFile1 = context.AddTempFile(null);
+      var tempFile2 = context.AddTempFile(null);
 
       // Verify
-      Assert.Equal("temp-file-1", tempFile1);
-      Assert.Equal("temp-file-2", tempFile2);
+      Assert.Equal("composed-temp-file-1", tempFile1);
+      Assert.Equal("composed-temp-file-2", tempFile2);
     }
 
     [Fact]
@@ -130,8 +135,8 @@ namespace BigSort.Test.Common
         TempDirectoryPath = @"x:\"
       };
       var context = new FileContext(mockFs, mockLf, options);
-      var tempFile1 = context.AddTempFile();
-      var tempFile2 = context.AddTempFile();
+      var tempFile1 = context.AddTempFile(null);
+      var tempFile2 = context.AddTempFile(null);
 
       // Verify
       Assert.Equal("result-temp-1", tempFile1);
@@ -144,23 +149,27 @@ namespace BigSort.Test.Common
       var mockFs = Substitute.For<IFileSystem>();
       var mockLf = Substitute.For<ILoggerFactory>();
       mockFs.File.Exists("input-file-path").Returns(true);
-      mockFs.Path.GetTempFileName().Returns(
+      mockFs.Path.GetRandomFileName().Returns(
         "temp-file-1",
         "temp-file-2"
       );
+      mockFs.Path.Combine("temp-path", "temp-file-1").Returns("composed-temp-file-1");
+      mockFs.Path.Combine("temp-path", "temp-file-2").Returns("composed-temp-file-2");
+
 
       var options = new FileContextOptions
       {
         InFilePath = "input-file-path",
+        TempDirectoryPath = "temp-path"
       };
       var context = new FileContext(mockFs, mockLf, options);
-      context.AddTempFile();
-      context.AddTempFile();
+      context.AddTempFile(null);
+      context.AddTempFile(null);
       context.Dispose();
 
       // Verify
-      mockFs.File.Received().Delete("temp-file-1");
-      mockFs.File.Received().Delete("temp-file-2");
+      mockFs.File.Received().Delete("composed-temp-file-1");
+      mockFs.File.Received().Delete("composed-temp-file-2");
     }
   }
 }

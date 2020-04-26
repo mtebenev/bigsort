@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.V2;
@@ -38,7 +39,11 @@ namespace BigSort.Validation
 
           if(comparer.Compare(r1, r2) > 0)
           {
-            throw new InvalidOperationException($"Invalid data at line: {progressCounter.CurrentLine}\n{r2.Value}");
+            var sb = new StringBuilder();
+            sb.AppendLine($"Invalid data at line: { progressCounter.CurrentLine + 1}");
+            sb.AppendLine(r1.Value);
+            sb.AppendLine($"---> {r2.Value}");
+            throw new InvalidOperationException(sb.ToString());
           }
 
           progressCounter.OnLineProcessed(evt.Buffer.Buffer[i]);
