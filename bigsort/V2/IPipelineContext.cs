@@ -42,9 +42,9 @@ namespace BigSort.V2
     void OnInfixesReady();
 
     /// <summary>
-    /// Invoke on the chunk flush for tracking start/flush pairs.
+    /// Invoke when meet a chunk with some infix to track the flushing.
     /// </summary>
-    void OnChunkStart(uint infix);
+    void OnReceivedChunk(uint infix);
 
     /// <summary>
     /// Invoke on the chunk flush for tracking start/flush pairs.

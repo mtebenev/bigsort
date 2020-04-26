@@ -25,10 +25,10 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// The factory.
     /// </summary>
-    public static TransformBlock<SortBucket, ChunkFlushEvent> Create(IPipelineContext pipelineContext)
+    public static TransformBlock<SortChunkBuffer, ChunkFlushEvent> Create(IPipelineContext pipelineContext)
     {
       var block = new ChunkFlushBlock(pipelineContext);
-      var result = new TransformBlock<SortBucket, ChunkFlushEvent>(
+      var result = new TransformBlock<SortChunkBuffer, ChunkFlushEvent>(
         (bucket) => block.Execute(bucket, pipelineContext),
         new ExecutionDataflowBlockOptions 
         {
@@ -40,11 +40,11 @@ namespace BigSort.V2.Blocks
       return result;
     }
 
-    private ChunkFlushEvent Execute(SortBucket bucket, IPipelineContext pipelineContext)
+    private ChunkFlushEvent Execute(SortChunkBuffer chunkBuffer, IPipelineContext pipelineContext)
     {
-      this._logger.LogDebug("Flushing chunk, infix: {infix}", InfixUtils.InfixToString(bucket.Infix));
+      this._logger.LogDebug("Flushing chunk, infix: {infix}", InfixUtils.InfixToString(chunkBuffer.Infix));
 
-      var chunkFilePath = pipelineContext.FileContext.AddTempFile($"chunk-{InfixUtils.InfixToString(bucket.Infix)}");
+      var chunkFilePath = pipelineContext.FileContext.AddTempFile($"chunk-{InfixUtils.InfixToString(chunkBuffer.Infix)}");
 
       using(Markers.EnterSpan("Bucket flush"))
       using(MiniProfiler.Current.CustomTiming("Save chunk file", ""))
@@ -52,18 +52,19 @@ namespace BigSort.V2.Blocks
       {
         using(var sw = new StreamWriter(stream))
         {
-          for(var i = 0; i < bucket.Records.Count; i++)
+          var size = chunkBuffer.SortRecordBuffer.BufferSize;
+          for(var i = 0; i < size; i++)
           {
-            sw.WriteLine(bucket.Records[i].Value);
+            sw.WriteLine(chunkBuffer.SortRecordBuffer.Buffer[i].Value);
           }
           stream.Flush();
         }
       }
 
       pipelineContext.Stats.AddChunkFlushes();
-      pipelineContext.OnChunkFlush(bucket.Infix);
+      pipelineContext.OnChunkFlush(chunkBuffer.Infix);
 
-      var result = new ChunkFlushEvent(chunkFilePath, bucket.Infix);
+      var result = new ChunkFlushEvent(chunkFilePath, chunkBuffer.Infix);
       return result;
     }
   }

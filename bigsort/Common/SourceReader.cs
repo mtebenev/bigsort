@@ -30,7 +30,7 @@ namespace BigSort.Common
       var splitBufferSize = blockSize;
       using(var sr = File.OpenText(inFilePath))
       {
-        var memBuffer = new string[splitBufferSize];
+        var stringBuffer = StringBuffer.Allocate(splitBufferSize);
 
         var s = string.Empty;
         var splitBufferPos = 0;
@@ -40,8 +40,7 @@ namespace BigSort.Common
           // This may block the thread if we have too many concurrent sorting tasks.
           if(splitBufferPos == splitBufferSize)
           {
-            var splitBuffer = new StringBuffer(memBuffer, splitBufferSize);
-            var evt = new BufferReadEvent(splitBuffer, sr.EndOfStream);
+            var evt = new BufferReadEvent(stringBuffer, sr.EndOfStream);
             var sendResult = await target.SendAsync(evt);
             if(!sendResult)
             {
@@ -50,10 +49,11 @@ namespace BigSort.Common
             stats.AddBlockReads();
             logger.LogDebug("Pushed string buffer. size: {size}, final: {isFinal}, progress: {progress}", splitBufferSize, sr.EndOfStream, progressCounter.GetProgressText());
 
-            memBuffer = new string[splitBufferSize];
+            stringBuffer = StringBuffer.Allocate(splitBufferSize);
             splitBufferPos = 0;
           }
-          memBuffer[splitBufferPos] = s;
+          stringBuffer.Buffer[splitBufferPos] = s;
+          stringBuffer.ActualSize += 1;
           splitBufferPos++;
           progressCounter.OnLineProcessed(s);
         }
@@ -61,8 +61,7 @@ namespace BigSort.Common
         // Sort the final buffer
         if(splitBufferPos > 0)
         {
-          var splitBuffer = new StringBuffer(memBuffer, splitBufferPos);
-          var evt = new BufferReadEvent(splitBuffer, true);
+          var evt = new BufferReadEvent(stringBuffer, true);
           var sendResult = await target.SendAsync(evt);
           if(!sendResult)
           {

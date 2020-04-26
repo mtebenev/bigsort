@@ -79,7 +79,7 @@ namespace BigSort.V2
       this._chunkFlushesMap.AddOrUpdate(infix, 1, (k, v) => v + 1);
     }
 
-    public void OnChunkStart(uint infix)
+    public void OnReceivedChunk(uint infix)
     {
       this._chunkStartsMap.AddOrUpdate(infix, 1, (k, v) => v + 1);
     }

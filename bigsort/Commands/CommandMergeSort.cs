@@ -50,7 +50,7 @@ namespace BigSort.Commands
         {
           var options = new MergeSortOptions
           {
-            MaxConcurrentJobs = Environment.ProcessorCount - 1 // Let user observe the perfmon
+            MaxConcurrentJobs = Environment.ProcessorCount
           };
 
           IMergeSortTask mergeSortTask = new MergeSortTaskV2();

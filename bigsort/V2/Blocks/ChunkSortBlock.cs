@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
@@ -19,10 +20,10 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// Factory.
     /// </summary>
-    public static TransformBlock<SortBucket, SortBucket> Create(MergeSortOptions options)
+    public static TransformBlock<SortChunkBuffer, SortChunkBuffer> Create(MergeSortOptions options)
     {
       var block = new ChunkSortBlock();
-      var result = new TransformBlock<SortBucket, SortBucket>(
+      var result = new TransformBlock<SortChunkBuffer, SortChunkBuffer>(
         (bucket) => block.Execute(bucket),
         new ExecutionDataflowBlockOptions
         {
@@ -33,12 +34,12 @@ namespace BigSort.V2.Blocks
       return result;
     }
 
-    private SortBucket Execute(SortBucket bucket)
+    private SortChunkBuffer Execute(SortChunkBuffer bucket)
     {
       using(Markers.EnterSpan("Bucket sort"))
       {
         var comparer = new SortRecordComparer();
-        bucket.Records.Sort(comparer);
+        Array.Sort(bucket.SortRecordBuffer.Buffer, 0, bucket.SortRecordBuffer.BufferSize, comparer);
       }
       return bucket;
     }

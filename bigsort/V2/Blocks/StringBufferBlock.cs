@@ -9,21 +9,25 @@ namespace BigSort.V2.Blocks
 {
   /// <summary>
   /// The block is responsible for bucket collecting records into the buckets.
+  /// We divide the input strings by the 'infix' - the first letter of the string part of the record.
+  /// This way we can quickly group the records by buckets and later merge them in parallel.
+  /// </summary>
+
   /// </summary>
   internal class StringBufferBlock
   {
-    private readonly Dictionary<uint, List<SortRecord>> _buckets;
+    private readonly Dictionary<uint, SortThresholdBuffer> _buckets;
     private readonly IPipelineContext _pipelineContext;
     private readonly ILogger _logger;
-    private readonly int _bufferSize;
+    private readonly int _thresholdSize;
 
     /// <summary>
     /// Ctor.
     /// </summary>
     private StringBufferBlock(IPipelineContext pipelineContext, int bufferSize)
     {
-      this._bufferSize = bufferSize;
-      this._buckets = new Dictionary<uint, List<SortRecord>>();
+      this._thresholdSize = bufferSize / 8; // Empirical value. There should be a balance between memory consumption and merge speed.
+      this._buckets = new Dictionary<uint, SortThresholdBuffer>();
       this._pipelineContext = pipelineContext;
       this._logger = pipelineContext.LoggerFactory.CreateLogger(nameof(Blocks.StringBufferBlock));
     }
@@ -31,10 +35,10 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// The factory.
     /// </summary>
-    public static TransformManyBlock<BufferReadEvent, SortBucket> Create(IPipelineContext pipelineContext, int bufferSize)
+    public static TransformManyBlock<BufferReadEvent, SortChunkBuffer> Create(IPipelineContext pipelineContext, int bufferSize)
     {
       var block = new StringBufferBlock(pipelineContext, bufferSize);
-      var result = new TransformManyBlock<BufferReadEvent, SortBucket>(
+      var result = new TransformManyBlock<BufferReadEvent, SortChunkBuffer>(
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
         {
@@ -51,59 +55,62 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// Executes the bucket sort on the string buffer.
     /// </summary>
-    public IEnumerable<SortBucket> Execute(BufferReadEvent evt)
+    public IEnumerable<SortChunkBuffer> Execute(BufferReadEvent evt)
     {
       this._logger.LogInformation("Start string buffer processing.");
-      this.PushNewRecords(evt.Buffer);
-      var flushedRecords = this.FlushChunks(evt.IsReadCompleted);
+      var flushedBuffers = this.PushNewRecords(evt.Buffer);
 
-      this._logger.LogInformation("Finished string buffer processing.");
-      return flushedRecords;
+      // If the source reading done, flush all the buffers.
+      if(evt.IsReadCompleted)
+      {
+        flushedBuffers = this._buckets
+          .Select(kvp => kvp.Value.SortChunkBuffer)
+          .ToList();
+      }
+
+      this.ProcessFlushedChunks(flushedBuffers, evt.IsReadCompleted);
+      evt.Buffer.Dispose(); // The read strings buffer ends here.
+
+      return flushedBuffers;
     }
 
     /// <summary>
     /// Pushes all newly obtained records the buckets.
     /// </summary>
-    private void PushNewRecords(StringBuffer stringBuffer)
+    private List<SortChunkBuffer> PushNewRecords(StringBuffer stringBuffer)
     {
-      var sortRecords = stringBuffer
-        .Buffer
-        .Take(stringBuffer.BufferSize)
-        .Select(s => new SortRecord(s));
+      var flushedBuffers = new List<SortChunkBuffer>();
 
-      foreach(var sr in sortRecords)
+      for(int i = 0; i < stringBuffer.ActualSize; i++)
       {
-        List<SortRecord> recordList;
-        if(!this._buckets.TryGetValue(sr.Infix, out recordList))
+        var sr = new SortRecord(stringBuffer.Buffer[i]);
+        SortThresholdBuffer thresholdBuffer;
+        if(!this._buckets.TryGetValue(sr.Infix, out thresholdBuffer))
         {
-          recordList = new List<SortRecord>();
-          this._buckets[sr.Infix] = recordList;
+          thresholdBuffer = SortThresholdBuffer.Allocate(sr.Infix, this._thresholdSize);
+          this._buckets[sr.Infix] = thresholdBuffer;
+        }
+        else
+        {
+          if(!thresholdBuffer.CanAdd())
+          {
+            flushedBuffers.Add(thresholdBuffer.SortChunkBuffer);
+            thresholdBuffer = SortThresholdBuffer.Allocate(sr.Infix, this._thresholdSize);
+            this._buckets[sr.Infix] = thresholdBuffer;
+          }
         }
 
-        recordList.Add(sr);
+        thresholdBuffer.Add(sr);
       }
+
+      return flushedBuffers;
     }
 
-    /// <summary>
-    /// Flushes full buckets if any.
-    /// </summary>
-    private IEnumerable<SortBucket> FlushChunks(bool isReadingCompleted)
+    private void ProcessFlushedChunks(List<SortChunkBuffer> flushedBuffers, bool isReadingCompleted)
     {
-      // TODO: this is not precise enough. The bucket threshold depends on the buckets count.
-      // So the idea is that we should avoid memory paging. In the same time we should keep buckets big enough to reduce the merge sources.
-      var maxBucketRecords = this._bufferSize / 10;
-      var stringSource = isReadingCompleted
-        ? this._buckets
-        : this._buckets.Where(kvp => kvp.Value.Count > maxBucketRecords);
-
-      var flushedBuckets = stringSource
-        .Select(kvp => new SortBucket(kvp.Key, kvp.Value))
-        .ToList();
-
-      foreach(var fb in flushedBuckets)
+      foreach(var fb in flushedBuffers)
       {
-        this._buckets.Remove(fb.Infix);
-        this._pipelineContext.OnChunkStart(fb.Infix);
+        this._pipelineContext.OnReceivedChunk(fb.Infix);
         this._logger.LogDebug("Flushed block, infix: {infix}", InfixUtils.InfixToString(fb.Infix));
       }
 
@@ -111,8 +118,7 @@ namespace BigSort.V2.Blocks
       {
         this._pipelineContext.OnInfixesReady();
       }
-
-      return flushedBuckets;
     }
+
   }
 }
