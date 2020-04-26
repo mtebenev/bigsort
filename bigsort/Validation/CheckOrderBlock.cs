@@ -27,7 +27,7 @@ namespace BigSort.Validation
           progressCounter.OnLineProcessed(evt.Buffer.Buffer[0]);
         }
 
-        for(int i = start; i < evt.Buffer.BufferSize; i++)
+        for(int i = start; i < evt.Buffer.ActualSize; i++)
         {
           if(i > 0 && i % 100000 == 0)
           {
@@ -48,8 +48,8 @@ namespace BigSort.Validation
 
           progressCounter.OnLineProcessed(evt.Buffer.Buffer[i]);
           prevLine = evt.Buffer.Buffer[i];
-        }
-      });
+    }
+  });
 
       return block;
     }

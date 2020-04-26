@@ -31,9 +31,16 @@
     }
 
     /// <summary>
-    /// The wrapped sort chunk buffer.
+    /// Detaches wrapped chunk buffer.
     /// </summary>
-    public SortChunkBuffer SortChunkBuffer => this._sortChunkBuffer;
+    public SortChunkBuffer DetachChunkBuffer()
+    {
+      var buffer = this._sortChunkBuffer;
+      buffer.SortRecordBuffer.SetBufferSize(this.FillPosition);
+      this._sortChunkBuffer = null;
+
+      return buffer;
+    }
 
     /// <summary>
     /// Current fill position.
@@ -45,7 +52,7 @@
     /// </summary>
     public bool CanAdd()
     {
-      return this.FillPosition < this.SortChunkBuffer.SortRecordBuffer.BufferSize;
+      return this.FillPosition < this._sortChunkBuffer.SortRecordBuffer.BufferSize;
     }
 
     /// <summary>
@@ -53,7 +60,7 @@
     /// </summary>
     internal void Add(SortRecord sr)
     {
-      this.SortChunkBuffer.SortRecordBuffer.Buffer[this.FillPosition] = sr;
+      this._sortChunkBuffer.SortRecordBuffer.Buffer[this.FillPosition] = sr;
       this.FillPosition += 1;
     }
   }

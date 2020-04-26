@@ -17,7 +17,7 @@ namespace BigSort.Validation
       var progressCounter = new FileProgressCounter(fileSize);
       var block = new ActionBlock<Tuple<DataRecord[], BufferReadEvent>>((t) =>
       {
-        if(t.Item1.Length != t.Item2.Buffer.BufferSize)
+        if(t.Item1.Length != t.Item2.Buffer.ActualSize)
         {
           // We actually can't say much in this case. Seems like input and output files are unrelated?
           throw new InvalidOperationException("Blocks in the file and database has different size.");

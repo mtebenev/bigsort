@@ -64,7 +64,7 @@ namespace BigSort.V2.Blocks
       if(evt.IsReadCompleted)
       {
         flushedBuffers = this._buckets
-          .Select(kvp => kvp.Value.SortChunkBuffer)
+          .Select(kvp => kvp.Value.DetachChunkBuffer())
           .ToList();
       }
 
@@ -94,7 +94,7 @@ namespace BigSort.V2.Blocks
         {
           if(!thresholdBuffer.CanAdd())
           {
-            flushedBuffers.Add(thresholdBuffer.SortChunkBuffer);
+            flushedBuffers.Add(thresholdBuffer.DetachChunkBuffer());
             thresholdBuffer = SortThresholdBuffer.Allocate(sr.Infix, this._thresholdSize);
             this._buckets[sr.Infix] = thresholdBuffer;
           }

@@ -9,6 +9,7 @@ namespace BigSort.V2
   internal class SortRecordBuffer : IDisposable
   {
     private SortRecord[] _buffer;
+    private int _bufferSize;
 
     /// <summary>
     /// Ctor.
@@ -16,7 +17,7 @@ namespace BigSort.V2
     private SortRecordBuffer(SortRecord[] buffer, int bufferSize)
     {
       this._buffer = buffer;
-      this.BufferSize = bufferSize;
+      this._bufferSize = bufferSize;
     }
 
     /// <summary>
@@ -29,6 +30,14 @@ namespace BigSort.V2
 
       var result = new SortRecordBuffer(memBuffer, bufferSize);
       return result;
+    }
+
+    /// <summary>
+    /// Updates size position of the buffer.
+    /// </summary>
+    public void SetBufferSize(int size)
+    {
+      this._bufferSize = size;
     }
 
     /// <summary>
@@ -49,7 +58,7 @@ namespace BigSort.V2
     /// <summary>
     /// Actual buffer size.
     /// </summary>
-    public int BufferSize { get; }
+    public int BufferSize => this._bufferSize;
 
   }
 }

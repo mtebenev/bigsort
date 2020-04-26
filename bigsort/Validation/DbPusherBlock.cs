@@ -38,7 +38,7 @@ namespace BigSort.Validation
         {
           var r = new DataRecord();
           int dotPos;
-          for(int i = 0; i < evt.Buffer.BufferSize; i++)
+          for(int i = 0; i < evt.Buffer.ActualSize; i++)
           {
             if(i > 0 && i % 100000 == 0)
             {
