@@ -16,7 +16,7 @@ namespace BigSort.V2.Blocks
   /// </summary>
   internal class StringBufferBlock
   {
-    private readonly Dictionary<uint, SortThresholdBuffer> _buckets;
+    private readonly Dictionary<ushort, SortThresholdBuffer> _buckets;
     private readonly IPipelineContext _pipelineContext;
     private readonly ILogger _logger;
     private readonly int _thresholdSize;
@@ -27,7 +27,7 @@ namespace BigSort.V2.Blocks
     private StringBufferBlock(IPipelineContext pipelineContext, int bufferSize)
     {
       this._thresholdSize = bufferSize / 8; // Empirical value. There should be a balance between memory consumption and merge speed.
-      this._buckets = new Dictionary<uint, SortThresholdBuffer>();
+      this._buckets = new Dictionary<ushort, SortThresholdBuffer>();
       this._pipelineContext = pipelineContext;
       this._logger = pipelineContext.LoggerFactory.CreateLogger(nameof(Blocks.StringBufferBlock));
     }

@@ -8,7 +8,7 @@
     /// <summary>
     /// Ctor.
     /// </summary>
-    public ChunkFlushEvent(string filePath, uint infix)
+    public ChunkFlushEvent(string filePath, ushort infix)
     {
       this.FilePath = filePath;
       this.Infix = infix;
@@ -22,6 +22,6 @@
     /// <summary>
     /// The infix of the chunk.
     /// </summary>
-    public uint Infix { get; }
+    public ushort Infix { get; }
   }
 }

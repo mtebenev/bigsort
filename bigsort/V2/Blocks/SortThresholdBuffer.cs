@@ -21,7 +21,7 @@
     /// <summary>
     /// Allocates the buffer.
     /// </summary>
-    public static SortThresholdBuffer Allocate(uint infix, int size)
+    public static SortThresholdBuffer Allocate(ushort infix, int size)
     {
       var sortRecordBuffer = SortRecordBuffer.Allocate(size);
       var sortChunkBuffer = new SortChunkBuffer(sortRecordBuffer, infix);

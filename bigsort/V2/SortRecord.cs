@@ -16,10 +16,10 @@ namespace BigSort.V2
     public SortRecord(string s)
     {
       this.DotPos = s.IndexOf('.');
-      var span = s.AsSpan(this.DotPos + 2, Math.Min(2, s.Length - this.DotPos - 2)); // Dot + space
+      var span = s.AsSpan(this.DotPos + 2, 1);
       if(span.Length >= 2)
       {
-        this.Infix = MemoryMarshal.Cast<char, uint>(span)[0];
+        this.Infix = MemoryMarshal.Cast<char, ushort>(span)[0];
       }
       else
       {
@@ -32,7 +32,7 @@ namespace BigSort.V2
     /// <summary>
     /// The infix.
     /// </summary>
-    public uint Infix { get; }
+    public ushort Infix { get; }
 
     /// <summary>
     /// The position of the string part (after dot).

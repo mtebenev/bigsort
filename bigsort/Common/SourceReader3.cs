@@ -10,9 +10,9 @@ using Microsoft.Extensions.Logging;
 namespace BigSort.Common
 {
   /// <summary>
-  /// The new source data reader for V2.
+  /// The new source data reader for V3.
   /// </summary>
-  internal class SourceReader2
+  internal class SourceReader3
   {
     /// <summary>
     /// Starts the reading.
@@ -29,7 +29,6 @@ namespace BigSort.Common
       var logger = loggerFactory.CreateLogger(nameof(SourceReader));
       logger.LogInformation("Started reading the source file.");
       var memoryBufferSize = (int)StringUtils.ParseFileSize("100mb", 1024); // Read by 100mb blocks
-      //var memoryBufferSize = (int)StringUtils.ParseFileSize("1kb", 1024); // Read by 100mb blocks
       using(var file = File.OpenRead(inFilePath))
       {
         var memoryPool = MemoryPool<byte>.Shared;

@@ -28,13 +28,13 @@ namespace BigSort.V2
     /// Resolved as soon as all possible infixes are known.
     /// That is when the source buffer block has processed all incoming strings.
     /// </summary>
-    Task<uint[]> GetAllInfixesAsync();
+    Task<ushort[]> GetAllInfixesAsync();
 
     /// <summary>
     /// All discovered infixes should be added with this method.
     /// To track sort/merge process and start merging earlier.
     /// </summary>
-    void AddInfix(uint infix);
+    void AddInfix(ushort infix);
 
     /// <summary>
     /// The pipeline should indicate when all infixes are discovered (no more new data from the source file).
@@ -44,17 +44,17 @@ namespace BigSort.V2
     /// <summary>
     /// Invoke when meet a chunk with some infix to track the flushing.
     /// </summary>
-    void OnReceivedChunk(uint infix);
+    void OnReceivedChunk(ushort infix);
 
     /// <summary>
     /// Invoke on the chunk flush for tracking start/flush pairs.
     /// </summary>
-    void OnChunkFlush(uint infix);
+    void OnChunkFlush(ushort infix);
 
     /// <summary>
     /// The pipeline should check if the whole bucket has been flushed.
     ///  After that the bucket's chunks could be merged.
     /// </summary>
-    bool IsBucketFullyFlushed(uint infix);
+    bool IsBucketFullyFlushed(ushort infix);
   }
 }

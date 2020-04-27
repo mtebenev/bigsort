@@ -12,7 +12,7 @@ namespace BigSort.V2
     /// <summary>
     /// Ctor.
     /// </summary>
-    public SortChunkBuffer(SortRecordBuffer sortRecordBuffer, uint Infix)
+    public SortChunkBuffer(SortRecordBuffer sortRecordBuffer, ushort Infix)
     {
       this._sortRecordBuffer = sortRecordBuffer;
       this.Infix = Infix;
@@ -26,7 +26,7 @@ namespace BigSort.V2
     /// <summary>
     /// The infix.
     /// </summary>
-    public uint Infix { get; }
+    public ushort Infix { get; }
 
     /// <summary>
     /// IDisposable.

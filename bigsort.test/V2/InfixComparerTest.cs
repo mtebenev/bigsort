@@ -11,10 +11,10 @@ namespace BigSort.Test.V2
     {
       var infixStrings = new[]
       {
-        "dd",
-        "aa",
-        "cc",
-        "bb"
+        "d",
+        "a",
+        "c",
+        "b"
       };
       var infixes = infixStrings.Select(s => InfixUtils.StringToInfix(s));
 
@@ -26,10 +26,10 @@ namespace BigSort.Test.V2
 
       var expectedInfixStrings = new[]
       {
-        "aa",
-        "bb",
-        "cc",
-        "dd",
+        "a",
+        "b",
+        "c",
+        "d",
       };
 
       Assert.Equal(expectedInfixStrings, sortedInfixStrings);
@@ -38,7 +38,7 @@ namespace BigSort.Test.V2
     [Fact]
     public void Testing_Utils_Converters()
     {
-      var s = "ab";
+      var s = "a";
       var infix = InfixUtils.StringToInfix(s);
       var s2 = InfixUtils.InfixToString(infix);
 

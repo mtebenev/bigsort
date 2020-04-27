@@ -11,10 +11,10 @@ namespace BigSort.V2
     /// <summary>
     /// String -> infix conversion.
     /// </summary>
-    public static uint StringToInfix(string s)
+    public static ushort StringToInfix(string s)
     {
       var infixBytes = Encoding.Unicode.GetBytes(s);
-      var result = BitConverter.ToUInt32(infixBytes);
+      var result = BitConverter.ToUInt16(infixBytes);
 
       return result;
     }
@@ -22,7 +22,7 @@ namespace BigSort.V2
     /// <summary>
     /// Infix -> string conversion.
     /// </summary>
-    public static string InfixToString(uint infix)
+    public static string InfixToString(ushort infix)
     {
       var infixBytes = BitConverter.GetBytes(infix);
       var result = Encoding.Unicode.GetString(infixBytes);
