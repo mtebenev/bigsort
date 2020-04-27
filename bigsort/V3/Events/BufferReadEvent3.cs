@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Text;
 using BigSort.Common;
 
-namespace BigSort.V2.Events
+namespace BigSort.V3.Events
 {
   /// <summary>
   /// Sent when a block of memory with strings has been read from the source file.
   /// </summary>
-  internal class BufferReadEvent2 : IDisposable
+  internal class BufferReadEvent3 : IDisposable
   {
     private readonly IMemoryOwner<byte> _memoryOwner;
     private readonly int _length;
@@ -17,7 +16,7 @@ namespace BigSort.V2.Events
     /// <summary>
     /// Ctor.
     /// </summary>
-    public BufferReadEvent2(IMemoryOwner<byte> memoryOwner, int length, bool isReadCompleted)
+    public BufferReadEvent3(IMemoryOwner<byte> memoryOwner, int length, bool isReadCompleted)
     {
       this._memoryOwner = memoryOwner;
       this._length = length;
@@ -40,12 +39,6 @@ namespace BigSort.V2.Events
     public void Dispose()
     {
       this._memoryOwner.Dispose();
-    }
-
-    internal string TESTGetString()
-    {
-      var s = Encoding.ASCII.GetString(this._memoryOwner.Memory.Span.Slice(0, this._length));
-      return s;
     }
   }
 }

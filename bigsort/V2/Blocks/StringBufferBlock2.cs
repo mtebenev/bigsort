@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
-using BigSort.V2.Events;
+using BigSort.V3.Events;
 using Microsoft.Extensions.Logging;
 
 namespace BigSort.V2.Blocks
@@ -30,10 +30,10 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// The factory.
     /// </summary>
-    public static TransformManyBlock<BufferReadEvent2, SortChunkBuffer> Create(IPipelineContext pipelineContext, int bufferSize)
+    public static TransformManyBlock<BufferReadEvent3, SortChunkBuffer> Create(IPipelineContext pipelineContext, int bufferSize)
     {
       var block = new StringBufferBlock2(pipelineContext, bufferSize);
-      var result = new TransformManyBlock<BufferReadEvent2, SortChunkBuffer>(
+      var result = new TransformManyBlock<BufferReadEvent3, SortChunkBuffer>(
         (evt) => block.Execute(evt),
         new ExecutionDataflowBlockOptions
         {
@@ -50,7 +50,7 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// Executes the bucket sort on the string buffer.
     /// </summary>
-    public IEnumerable<SortChunkBuffer> Execute(BufferReadEvent2 evt)
+    public IEnumerable<SortChunkBuffer> Execute(BufferReadEvent3 evt)
     {
       this._logger.LogInformation("Start string buffer processing.");
       var flushedBuffers = this.PushNewRecords(evt);
@@ -72,7 +72,7 @@ namespace BigSort.V2.Blocks
     /// <summary>
     /// Pushes all newly obtained records the buckets.
     /// </summary>
-    private List<SortChunkBuffer> PushNewRecords(BufferReadEvent2 evt)
+    private List<SortChunkBuffer> PushNewRecords(BufferReadEvent3 evt)
     {
       var flushedBuffers = new List<SortChunkBuffer>();
 

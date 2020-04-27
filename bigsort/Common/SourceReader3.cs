@@ -3,7 +3,7 @@ using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using BigSort.V2.Events;
+using BigSort.V3.Events;
 using Microsoft.ConcurrencyVisualizer.Instrumentation;
 using Microsoft.Extensions.Logging;
 
@@ -22,7 +22,7 @@ namespace BigSort.Common
       ILoggerFactory loggerFactory,
       string inFilePath, int blockSize,
       Stats stats,
-      ITargetBlock<BufferReadEvent2> target)
+      ITargetBlock<BufferReadEvent3> target)
     {
       var inFileSize = new FileInfo(inFilePath).Length;
       var progressCounter = new FileProgressCounter(inFileSize);
@@ -50,7 +50,7 @@ namespace BigSort.Common
             file.Seek(toSeekBack, SeekOrigin.Current);
           }
 
-          var evt = new BufferReadEvent2(memoryBuffer, spanEnd, isCompleted);
+          var evt = new BufferReadEvent3(memoryBuffer, spanEnd, isCompleted);
           var sendResult = await target.SendAsync(evt);
           if(!sendResult)
           {
