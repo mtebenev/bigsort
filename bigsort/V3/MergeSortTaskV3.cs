@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using BigSort.Common;
 using BigSort.V2;
 using Microsoft.Extensions.Logging;
@@ -9,6 +12,8 @@ namespace BigSort.V3
 {
   /// <summary>
   /// The V3 implementation.
+  /// Note: this is experimental. I'm just curious what a low-level file access can bing
+  /// in terms of performance.
   /// </summary>
   internal class MergeSortTaskV3 : IMergeSortTask
   {
@@ -24,6 +29,13 @@ namespace BigSort.V3
       var reader = new SourceReader3();
       var (startBlock, finishBlock) = PipelineBuilder3.Build(options, context, bufferSize);
 
+      var chunkPaths = new List<string>();
+      var terminator = new ActionBlock<string>(chunkPath =>
+      {
+        chunkPaths.Add(chunkPath);
+      });
+      finishBlock.LinkTo(terminator, new DataflowLinkOptions { PropagateCompletion = true });
+
       var readerTask = reader.StartAsync(
         loggerFactory,
         fileContext.InFilePath,
@@ -32,8 +44,14 @@ namespace BigSort.V3
         startBlock
       );
 
-      await Task.WhenAll(readerTask, startBlock.Completion, finishBlock.Completion);
+      await Task.WhenAll(readerTask, startBlock.Completion, terminator.Completion);
       context.Stats.PrintStats();
+
+      // Done all
+      foreach(var p in chunkPaths)
+      {
+        Console.WriteLine($"Chunk: {p}");
+      }
     }
 
     /// <summary>

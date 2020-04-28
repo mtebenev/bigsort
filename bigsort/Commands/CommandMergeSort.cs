@@ -54,7 +54,7 @@ namespace BigSort.Commands
             MaxConcurrentJobs = Environment.ProcessorCount
           };
 
-          IMergeSortTask mergeSortTask = new MergeSortTaskV3();
+          IMergeSortTask mergeSortTask = new MergeSortTaskV2();
           Console.WriteLine($"Launching merge sort V2...");
           await mergeSortTask.ExecuteAsync(fileContext, loggerFactory, options);
         }

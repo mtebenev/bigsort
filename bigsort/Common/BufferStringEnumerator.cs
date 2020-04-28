@@ -14,7 +14,7 @@ namespace BigSort.Common
     /// <summary>
     /// Enumerates strings.
     /// </summary>
-    public static IEnumerable<string> EnumerateString(ReadOnlyMemory<byte> memory)
+    public static IEnumerable<string> EnumerateStrings(ReadOnlyMemory<byte> memory)
     {
       var pos = 0;
       byte slashR = (byte)'\r';

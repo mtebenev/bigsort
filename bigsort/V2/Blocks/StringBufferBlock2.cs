@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
+using BigSort.Common;
 using BigSort.V3.Events;
 using Microsoft.Extensions.Logging;
 
@@ -76,7 +77,7 @@ namespace BigSort.V2.Blocks
     {
       var flushedBuffers = new List<SortChunkBuffer>();
 
-      var stringSource = evt.EnumerateStrings();
+      var stringSource = BufferStringEnumerator.EnumerateStrings(evt.Memory);
       foreach(var s in stringSource)
       {
         var sr = new SortRecord(s);

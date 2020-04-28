@@ -15,7 +15,7 @@ namespace BigSort.Test.Common
       var buffer = Encoding.ASCII.GetBytes(originalString);
 
       var result = BufferStringEnumerator
-        .EnumerateString(buffer.AsMemory(), buffer.Length)
+        .EnumerateStrings(buffer.AsMemory())
         .ToArray();
 
       var expected = new[]
@@ -35,7 +35,7 @@ namespace BigSort.Test.Common
       var buffer = Encoding.ASCII.GetBytes(originalString);
 
       var result = BufferStringEnumerator
-        .EnumerateString(buffer.AsMemory(), buffer.Length)
+        .EnumerateStrings(buffer.AsMemory())
         .ToArray();
 
       var expected = new[]
@@ -55,7 +55,7 @@ namespace BigSort.Test.Common
       var buffer = Encoding.ASCII.GetBytes(originalString);
 
       var result = BufferStringEnumerator
-        .EnumerateString(buffer.AsMemory(), buffer.Length)
+        .EnumerateStrings(buffer.AsMemory())
         .ToArray();
 
       var expected = new string[0];
@@ -70,7 +70,7 @@ namespace BigSort.Test.Common
       var buffer = Encoding.ASCII.GetBytes(originalString);
 
       var result = BufferStringEnumerator
-        .EnumerateString(buffer.AsMemory(), buffer.Length)
+        .EnumerateStrings(buffer.AsMemory())
         .ToArray();
 
       var expected = new string[0];
