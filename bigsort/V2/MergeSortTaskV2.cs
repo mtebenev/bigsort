@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BigSort.Common;
@@ -51,8 +52,11 @@ namespace BigSort.V2
       var probingThresold = StringUtils.ParseFileSize("1gb", 1024);
       if(fileContext.GetInFileSize() > probingThresold)
       {
-        // Let's use 2GB memory for base (sorting).
-        var allowedMemory = StringUtils.ParseFileSize("2gb", 1024);
+        // We will use a portion of memory for the base buffers. The rest to be allocated by
+        // the in-memory buckets (it depends on the input data dictionary).
+        var memoryInfo = GC.GetGCMemoryInfo();
+        var allowedMemory = memoryInfo.TotalAvailableMemoryBytes / 16;
+        logger.LogInformation($"Using ~{StringUtils.GetHumanReadableSize(allowedMemory)} for buffers.");
         var bufferVolume = allowedMemory / maxConcurrentJobs;
 
         // Read first 1000 lines of the file and get average line length.
