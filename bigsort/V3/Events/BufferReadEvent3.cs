@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections.Generic;
-using BigSort.Common;
 
 namespace BigSort.V3.Events
 {
@@ -23,10 +21,10 @@ namespace BigSort.V3.Events
       this.IsReadCompleted = isReadCompleted;
     }
 
-    public IEnumerable<string> EnumerateStrings()
-    {
-      return BufferStringEnumerator.EnumerateString(this._memoryOwner.Memory, this._length);
-    }
+    /// <summary>
+    /// The memory access.
+    /// </summary>
+    public ReadOnlyMemory<byte> Memory => this._memoryOwner.Memory.Slice(0, this._length);
 
     /// <summary>
     /// True when the block is final. This is the hint that the chunk merge could start.

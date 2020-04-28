@@ -14,7 +14,7 @@ namespace BigSort.Common
     /// <summary>
     /// Enumerates strings.
     /// </summary>
-    public static IEnumerable<string> EnumerateString(ReadOnlyMemory<byte> memory, int length)
+    public static IEnumerable<string> EnumerateString(ReadOnlyMemory<byte> memory)
     {
       var pos = 0;
       byte slashR = (byte)'\r';
@@ -22,7 +22,7 @@ namespace BigSort.Common
       string s = String.Empty;
       var isNonEmpty = false;
 
-      while(pos < length)
+      while(pos < memory.Length)
       {
         isNonEmpty = false;
         var workSpan = memory.Span.Slice(pos);
@@ -55,17 +55,19 @@ namespace BigSort.Common
     /// <summary>
     /// Enumerates string pointers in the buffer.
     /// </summary>
-    public static IEnumerable<BufferStringPointer> EnumeratePointers(ReadOnlyMemory<byte> memory, int length)
+    public static IEnumerable<BufferStringPointer> EnumeratePointers(ReadOnlyMemory<byte> memory)
     {
       var pos = 0;
       byte slashR = (byte)'\r';
       byte slashN = (byte)'\n';
+      byte dot = (byte)'.';
       var isNonEmpty = false;
 
       int stringStart = 0;
       int stringLength = 0;
+      int dotPos = -1;
 
-      while(pos < length)
+      while(pos < memory.Length)
       {
         isNonEmpty = false;
         var workSpan = memory.Span.Slice(pos);
@@ -78,6 +80,7 @@ namespace BigSort.Common
           {
             stringStart = pos;
             stringLength = idxR;
+            dotPos = workSpan.IndexOf(dot);
             isNonEmpty = true;
           }
           pos += idxR + 2;
@@ -86,13 +89,14 @@ namespace BigSort.Common
         {
           stringStart = pos;
           stringLength = workSpan.Length;
+          dotPos = workSpan.IndexOf(dot);
           pos += workSpan.Length;
           isNonEmpty = true;
         }
 
         if(isNonEmpty)
         {
-          yield return new BufferStringPointer(stringStart, stringLength);
+          yield return new BufferStringPointer(stringStart, stringLength, dotPos);
         }
       }
     }

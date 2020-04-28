@@ -31,26 +31,26 @@ namespace BigSort.Common
       var memoryBufferSize = (int)StringUtils.ParseFileSize("100mb", 1024); // Read by 100mb blocks
       using(var file = File.OpenRead(inFilePath))
       {
-        var memoryPool = MemoryPool<byte>.Shared;
-        var memoryBuffer = memoryPool.Rent(memoryBufferSize);
+        var bytePool = MemoryPool<byte>.Shared;
+        var byteBuffer = bytePool.Rent(memoryBufferSize);
 
         var isCompleted = false;
         do
         {
-          var read = file.Read(memoryBuffer.Memory.Span);
+          var read = file.Read(byteBuffer.Memory.Span);
           isCompleted = read < memoryBufferSize;
 
           // Push the buffer to processing.
           // This may block the thread if we have too many concurrent sorting tasks.
-          int spanEnd = memoryBuffer.Memory.Length;
+          int spanEnd = read;
           if(!isCompleted)
           {
-            spanEnd = this.FindLastLineEnd(memoryBuffer.Memory);
+            spanEnd = this.FindLastLineEnd(byteBuffer.Memory, read);
             var toSeekBack = spanEnd - memoryBufferSize;
             file.Seek(toSeekBack, SeekOrigin.Current);
           }
 
-          var evt = new BufferReadEvent3(memoryBuffer, spanEnd, isCompleted);
+          var evt = new BufferReadEvent3(byteBuffer, spanEnd, isCompleted);
           var sendResult = await target.SendAsync(evt);
           if(!sendResult)
           {
@@ -59,7 +59,7 @@ namespace BigSort.Common
           stats.AddBlockReads();
           logger.LogDebug("Pushed string buffer. size: {size}, final: {isFinal}, progress: {progress}", read, isCompleted, progressCounter.GetProgressText());
 
-          memoryBuffer = memoryPool.Rent(memoryBufferSize);
+          byteBuffer = bytePool.Rent(memoryBufferSize);
         } while(!isCompleted);
 
         target.Complete();
@@ -70,9 +70,9 @@ namespace BigSort.Common
       }
     }
 
-    private int FindLastLineEnd(Memory<byte> memory)
+    private int FindLastLineEnd(Memory<byte> memory, int length)
     {
-      var pos = memory.Length - 1;
+      var pos = length - 1;
       var span = memory.Span;
 
       byte slashR = (byte)'\r';
